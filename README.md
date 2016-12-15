@@ -5,27 +5,27 @@
 
 Table of Contents
 
-Objectives and initial setup        2
+Objectives and initial setup
 
-Introduction to Ansible        3
+Introduction to Ansible
 
-Lab 1: Create Control VM using Azure CLI        4
+Lab 1: Create Control VM using Azure CLI
 
-Lab 2: Create Service Principal        5
+Lab 2: Create Service Principal
 
-Lab 3: Install Ansible in the provisioning VM        7
+Lab 3: Install Ansible in the provisioning VM 
 
-Lab 4: Ansible dynamic inventory for Azure        9
+Lab 4: Ansible dynamic inventory for Azure
 
-Lab 5: Creating a VM using an Ansible Playbook        11
+Lab 5: Creating a VM using an Ansible Playbook
 
-Lab 6: Running an Ansible playbook on the new VM        15
+Lab 6: Running an Ansible playbook on the new VM
 
-Lab 7: Deleting a VM using Ansible (Optional)        17
+Lab 7: Deleting a VM using Ansible (Optional)
 
-End the lab        18
+End the lab
 
-**References**         19
+References
 
 
 
@@ -35,9 +35,9 @@ This document contains a lab guide that helps to deploy a basic environment in A
 
 Before starting with this account, make sure to fulfill all the requisites:
 
-- --A valid Azure subscription account. If you don&#39;t have one, you can create your [free azure account](https://azure.microsoft.com/en-us/free/) (https://azure.microsoft.com/en-us/free/) today.
-- --If you are using Windows 10, you can [install Bash shell on Ubuntu on Windows](http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10) ( [http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10](http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10)). To install Azure CLI, download and [install the latest Node.js and npm](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)  for Ubuntu ( [https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)). Then, follow the [instructions](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/) ( **Option-1** ): [https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/)
-- --If you are using MAC or another windows version, install Azure CLI, following **Option-2** : [https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/)
+- A valid Azure subscription account. If you don&#39;t have one, you can create your [free azure account](https://azure.microsoft.com/en-us/free/) (https://azure.microsoft.com/en-us/free/) today.
+- If you are using Windows 10, you can [install Bash shell on Ubuntu on Windows](http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10) ( [http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10](http://www.windowscentral.com/how-install-bash-shell-command-line-windows-10)). To install Azure CLI, download and [install the latest Node.js and npm](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)  for Ubuntu ( [https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)). Then, follow the [instructions](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/) ( **Option-1** ): [https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/)
+- If you are using MAC or another windows version, install Azure CLI, following **Option-2** : [https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/](https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/)
 
 The labs cover:
 
@@ -80,14 +80,20 @@ Figure 1. Overall architecture example from Ansible to configure Database and We
 
 1. Step 1.Create provisioning machine using Azure CLI from a Linux shell (because we will connect to a new VM using SSH public/private key authentication).
 
-**azure login**
+```
+azure login
+```
 
-**azure group create ansiblelab westeurope**
+```
+azure group create ansiblelab westeurope
+```
 
-**azure vm quick-create -g ansiblelab -n vm-00 -l westeurope -w 19761013myvm -u lab-user -M .ssh/id\_rsa.pub -p Microsoft123! -Q &quot;OpenLogic:CentOS:7.2:latest&quot; -s &quot;Visual Studio Enterprise&quot; -y Linux**
-
-**ping 19761013myvm.westeurope.cloudapp.azure.com**
-
+```
+azure vm quick-create -g ansiblelab -n vm-00 -l westeurope -w 19761013myvm -u lab-user -M .ssh/id\_rsa.pub -p Microsoft123! -Q &quot;OpenLogic:CentOS:7.2:latest&quot; -s &quot;Visual Studio Enterprise&quot; -y Linux
+```
+```
+ping 19761013myvm.westeurope.cloudapp.azure.com
+```
 1. Step 2.Connect to the newly created machine
 
 **ping 19761013myvm.westeurope.cloudapp.azure.com**
