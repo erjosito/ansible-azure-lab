@@ -282,7 +282,7 @@ ansible -i ./azure\_rm.py all -m shell -a '/bin/uname -a'
 ```
 # Lab 5: Creating a VM using an Ansible Playbook
 
-Now that we have Ansible up and running, we can deploy our first playbook in order to create a VM. This playbook will not be executed using the dynamic inventory function, but on the localhost. This will trigger the necessary calls to Azure so that all required objects are created. We will be using the playbook example that was cloned from the Github repository for this lab in previous sections, which you should have stored in **~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml**.
+Now that we have Ansible up and running, we can deploy our first playbook in order to create a VM. This playbook will not be executed using the dynamic inventory function, but on the localhost. This will trigger the necessary calls to Azure so that all required objects are created. We will be using the playbook example that was cloned from the Github repository for this lab in previous sections, which you should have stored in `~/Azure-Ansible-Examples/azure-playbooks/new_vm_web.yml`.
 
 1. Step 1.You need to change the public SSH key that you will find inside of `~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml` with your own key, which you can find using this command:
 
@@ -314,7 +314,7 @@ $ azure network vnet subnet list -e vm-00-weste-hl2w86f529j7-vnet -g ansiblelab
 
 info:    Executing command network vnet subnet list
 + Looking up the virtual network 'vm-00-weste-hl2w86f529j7-vnet'
-+ Getting virtual network subnets**
++ Getting virtual network subnets
 data:    Name                           Provisioning state  Address prefix
 data:    -----------------------------  ------------------  --------------
 data:    vm-00-weste-hl2w86f529j7-snet  Succeeded           10.0.1.0/24
@@ -326,15 +326,15 @@ info:    network vnet subnet list command OK
 ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml --extra-vars 'vmname=19761013web01 resgrp=ansiblelab vnet=vm-00-weste-hl2w86f529j7-vnet subnet=vm-00-weste-hl2w86f529j7-snet'
 ```
 
-**Step 5.** While the playbook is running, have a look in another console inside of the file `~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml** , and try to identify the different parts it is made out of. When the playbook has been executed successfully, the output should be similar to this one. If it is not, check the appendix for possible error causes:
+**Step 5.** While the playbook is running, have a look in another console inside of the file `~/Azure-Ansible-Examples/azure-playbooks/new_vm_web.yml` , and try to identify the different parts it is made out of. When the playbook has been executed successfully, the output should be similar to this one. If it is not, check the appendix for possible error causes:
 
 ```
-[WARNING]: provided hosts list is empty, only localhost is available**
+[WARNING]: provided hosts list is empty, only localhost is available
 
 PLAY [CREATE VM PLAYBOOK] ******************************************************
 
 TASK [debug] *******************************************************************
-ok: [localhost] =&gt; {
+ok: [localhost] => {
   'msg': 'Public DNS name web011138.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. '
 }
 
@@ -367,12 +367,12 @@ $ ansible -i ~/ansible/contrib/inventory/azure\_rm.py all -m ping
 
 The authenticity of host &#39;52.174.47.97 (52.174.47.97)&#39; can&#39;t be established.
 ECDSA key fingerprint is 48:89:dc:6d:49:77:2d:85:50:6b:73:90:70:c6:05:5c.
-Are you sure you want to continue connecting (yes/no)?  vm-00 | SUCCESS =&gt; {
+Are you sure you want to continue connecting (yes/no)?  vm-00 | SUCCESS => {
     'changed': false,
     'ping': 'pong'
 }
 **yes**
-19761013web01 | SUCCESS =&gt; {
+19761013web01 | SUCCESS => {
     'changed': false,
     'ping': 'pong'
 }
@@ -381,12 +381,12 @@ Are you sure you want to continue connecting (yes/no)?  vm-00 | SUCCESS =&gt; {
 ```
   $ ansible -i ~/ansible/contrib/inventory/azure\_rm.py all -m ping
 
-vm-00 | SUCCESS =&gt; {
+vm-00 | SUCCESS => {
     'changed': false,
     'ping': 'pong'
 }
 
-19761013web01 | SUCCESS =&gt; {
+19761013web01 | SUCCESS => {
     'changed': false,
     'ping': 'pong'
 }
