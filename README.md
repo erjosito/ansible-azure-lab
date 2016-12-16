@@ -214,7 +214,7 @@ git clone git://github.com/ansible/ansible.git –recursive
 git clone git://github.com/erjosito/Azure-Ansible-Examples
 ```
 
-**Step 4.** Lastly, you need to create a new file in the directory `~/.azure` (create it if it does not exist), using the credentials generated in the previous sections. The filename is ~/.azure/credentials
+**Step 4.** Lastly, you need to create a new file in the directory `~/.azure` (create it if it does not exist), using the credentials generated in the previous sections. The filename is `~/.azure/credentials`.
 
 ```
 mkdir ~/.azure
@@ -257,11 +257,11 @@ Ansible allows to execute operations in machines that can be defined in a static
 ```
 python ./ansible/contrib/inventory/azure\_rm.py --list
 ```
-**Step 2.** Now we can test Ansible functionality. But we will not change anything on the target machines, just test reachability with the Ansible function &quot;ping&quot;.
+**Step 2.** Now we can test Ansible functionality. But we will not change anything on the target machines, just test reachability with the Ansible function &`ping`.
 ```
 ansible -i ./ansible/contrib/inventory/azure\_rm.py all -m ping
 ```
-**Step 3.** If you already had VMs in your Azure subscription, they probably popped up in the previous steps in this lab. We can refine the inventory script in order to return only the VMs in a certain resource group. To that purpose, we will modify the .ini file that controls some aspects of `azure\_rm.py`. This .ini file is to be located in the same directory as the Python script: **~/ansible/contrib/inventory/azure\_rm.ini**. You need to find the line that specifies which resource groups are to be inspected, uncomment it and change it to something like this:
+**Step 3.** If you already had VMs in your Azure subscription, they probably popped up in the previous steps in this lab. We can refine the inventory script in order to return only the VMs in a certain resource group. To that purpose, we will modify the .ini file that controls some aspects of `azure\_rm.py`. This .ini file is to be located in the same directory as the Python script: `~/ansible/contrib/inventory/azure\_rm.ini`. You need to find the line that specifies which resource groups are to be inspected, uncomment it and change it to something like this:
 
 ```
 resource\_groups=ansiblelab
@@ -314,7 +314,7 @@ data:    Name                           Provisioning state  Address prefix
 data:    -----------------------------  ------------------  --------------
 data:    vm-00-weste-hl2w86f529j7-snet  Succeeded           10.0.1.0/24
 info:    network vnet subnet list command OK
-
+```
 **Step 4.** Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, prefixing it with your birthday).
 
 ```
