@@ -1,27 +1,17 @@
 # Table of Contents
 
 Objectives and initial setup
-
 Introduction to Ansible
-
 Lab 1: Create Control VM using Azure CLI
-
 Lab 2: Create Service Principal
-
 Lab 3: Install Ansible in the provisioning VM 
-
 Lab 4: Ansible dynamic inventory for Azure
-
 Lab 5: Creating a VM using an Ansible Playbook
-
 Lab 6: Running an Ansible playbook on the new VM
-
-Lab 7: Deleting a VM using Ansible (Optional)
-
-End the lab
-
-References
-
+[Lab 7: Deleting a VM using Ansible - Optional](#Lab 7: Deleting a VM using Ansible - Optional)
+[End the lab](#End the lab)
+[References](#References)
+[](#)
 
 
 # Objectives and initial setup
@@ -232,8 +222,8 @@ touch ~/.azure/credentials
 ```
 cat <<EOF > ~/.azure/credentials
 [default]
-subscription\_id=**** 22222222-2222-2222-2222-222222222222**
-client\_id=**** 11111111-1111-1111-1111-111111111111**
+subscription_id=22222222-2222-2222-2222-222222222222
+client_id=11111111-1111-1111-1111-111111111111
 secret=ThisIsTheAppPassword
 tenant=33333333-3333-3333-3333-333333333333
 EOF
@@ -423,7 +413,7 @@ PLAY RECAP *********************************************************************
 
 **Step 2.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location http://19761013web01.westeurope.cloudapp.azure.com.
 
-# Lab 7: Deleting a VM using Ansible (Optional)
+# Lab 7: Deleting a VM using Ansible - Optional
 
 Finally, similarly to the process to create a VM we can use Ansible to delete it, making sure that associated objects such storage account, NICs and Network Security Groups are deleted as well. For that we will use the playbook in this lab&#39;s repository delete\_vm.yml:
 
