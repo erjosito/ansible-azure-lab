@@ -64,7 +64,8 @@ In order to interact with machines other than Linux servers (for example, with t
 Additionally, Ansible requires that the managed hosts are documented in a inventory. Alternatively, Ansible supports dynamic inventories for some systems, including Azure, so that the host inventory is dynamically generated at runtime.
 
 ![Architecture Image](https://github.com/erjosito/ansible-azure-lab/blob/master/ansible_arch.png "Ansible Architecture Example")
-Figure: Ansible architecture example to configure web servers and databases
+
+**Figure**: Ansible architecture example to configure web servers and databases
 
 
 # Lab 1: Create Control VM using Azure CLI
