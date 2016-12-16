@@ -85,7 +85,7 @@ azure group create ansiblelab westeurope
 ```
 
 ```
-azure vm quick-create -g ansiblelab -n vm-00 -l westeurope -w 19761013myvm -u lab-user -M .ssh/id\_rsa.pub -p Microsoft123! -Q &quot;OpenLogic:CentOS:7.2:latest&quot; -s &quot;Visual Studio Enterprise&quot; -y Linux
+azure vm quick-create -g ansiblelab -n vm-00 -l westeurope -w 19761013myvm -u lab-user -M .ssh/id\_rsa.pub -p Microsoft123! -Q 'OpenLogic:CentOS:7.2:latest' -s 'Visual Studio Enterprise' -y Linux
 ```
 ```
 ping 19761013myvm.westeurope.cloudapp.azure.com
@@ -272,13 +272,13 @@ ansible -i ./ansible/contrib/inventory/azure\_rm.py all -m ping
 resource\_groups=ansiblelab
 ```
 
-**Step 4.** Now you can do again the reachability test with &quot;ping&quot;, and verify that only the provisioning VM (the only VM in our resource group) is tested.
+**Step 4.** Now you can do again the reachability test with 'ping', and verify that only the provisioning VM (the only VM in our resource group) is tested.
 ```
 ansible -i ./ansible/contrib/inventory/azure\_rm.py all -m ping
 ```
 **Step 5.** You can actually do much more with ansible, such as running any command on all the VMs returned by the dynamic inventory script, in this case `/bin/uname -a`
 ```
-ansible -i ./azure\_rm.py all -m shell -a &quot;/bin/uname -a&quot;
+ansible -i ./azure\_rm.py all -m shell -a '/bin/uname -a'
 ```
 # Lab 5: Creating a VM using an Ansible Playbook
 
@@ -313,7 +313,7 @@ info:    network vnet list command OK
 $ azure network vnet subnet list -e vm-00-weste-hl2w86f529j7-vnet -g ansiblelab
 
 info:    Executing command network vnet subnet list
-+ Looking up the virtual network &quot;vm-00-weste-hl2w86f529j7-vnet&quot;
++ Looking up the virtual network 'vm-00-weste-hl2w86f529j7-vnet'
 + Getting virtual network subnets**
 data:    Name                           Provisioning state  Address prefix
 data:    -----------------------------  ------------------  --------------
@@ -323,7 +323,7 @@ info:    network vnet subnet list command OK
 **Step 4.** Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, prefixing it with your birthday).
 
 ```
-ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml --extra-vars &quot;vmname=19761013web01 resgrp=ansiblelab vnet=vm-00-weste-hl2w86f529j7-vnet subnet=vm-00-weste-hl2w86f529j7-snet&quot;
+ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml --extra-vars 'vmname=19761013web01 resgrp=ansiblelab vnet=vm-00-weste-hl2w86f529j7-vnet subnet=vm-00-weste-hl2w86f529j7-snet'
 ```
 
 **Step 5.** While the playbook is running, have a look in another console inside of the file `~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml** , and try to identify the different parts it is made out of. When the playbook has been executed successfully, the output should be similar to this one. If it is not, check the appendix for possible error causes:
@@ -335,7 +335,7 @@ PLAY [CREATE VM PLAYBOOK] ******************************************************
 
 TASK [debug] *******************************************************************
 ok: [localhost] =&gt; {
-  &quot;msg&quot;: &quot;Public DNS name web011138.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. &quot;
+  'msg': 'Public DNS name web011138.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. '
 }
 
 TASK [Check if DNS is taken] ***************************************************
@@ -368,13 +368,13 @@ $ ansible -i ~/ansible/contrib/inventory/azure\_rm.py all -m ping
 The authenticity of host &#39;52.174.47.97 (52.174.47.97)&#39; can&#39;t be established.
 ECDSA key fingerprint is 48:89:dc:6d:49:77:2d:85:50:6b:73:90:70:c6:05:5c.
 Are you sure you want to continue connecting (yes/no)?  vm-00 | SUCCESS =&gt; {
-    &quot;changed&quot;: false,
-    &quot;ping&quot;: &quot;pong&quot;
+    'changed': false,
+    'ping': 'pong'
 }
 **yes**
 19761013web01 | SUCCESS =&gt; {
-    &quot;changed&quot;: false,
-    &quot;ping&quot;: &quot;pong&quot;
+    'changed': false,
+    'ping': 'pong'
 }
 ```
 
@@ -382,13 +382,13 @@ Are you sure you want to continue connecting (yes/no)?  vm-00 | SUCCESS =&gt; {
   $ ansible -i ~/ansible/contrib/inventory/azure\_rm.py all -m ping
 
 vm-00 | SUCCESS =&gt; {
-    &quot;changed&quot;: false,
-    &quot;ping&quot;: &quot;pong&quot;
+    'changed': false,
+    'ping': 'pong'
 }
 
 19761013web01 | SUCCESS =&gt; {
-    &quot;changed&quot;: false,
-    &quot;ping&quot;: &quot;pong&quot;
+    'changed': false,
+    'ping': 'pong'
 }
 ```
 
@@ -398,10 +398,10 @@ In this section we will run another Ansible playbook, this time to configure the
 
 You will probably be thinking that if the purpose of the exercise is creating a Web server, there are other quicker ways in Azure to do that, for example, using Web Apps. Please consider that we are using this as example, you could be running an Ansible playbook to do anything that Ansible supports, and that is a lot.
 
-**Step 1.** We will be using the example playbook that was downloaded from Github `~/Azure-Ansible-Examples/azure-playbooks/httpd.yml`. Additionally, we will be using the variable `vmname` in order to modify the &quot;hosts&quot; parameter of the playbook, that defines on which host (out of the ones returned by the dynamic inventory script) the playbook will be run.
+**Step 1.** We will be using the example playbook that was downloaded from Github `~/Azure-Ansible-Examples/azure-playbooks/httpd.yml`. Additionally, we will be using the variable `vmname` in order to modify the `hosts` parameter of the playbook, that defines on which host (out of the ones returned by the dynamic inventory script) the playbook will be run.
 
 ```
-$ ansible-playbook -i ~/ansible/contrib/inventory/azure\_rm.py ~/Azure-Ansible-Examples/azure-playbooks/httpd.yml --extra-vars  &quot;vmname=19761013web01&quot;
+$ ansible-playbook -i ~/ansible/contrib/inventory/azure\_rm.py ~/Azure-Ansible-Examples/azure-playbooks/httpd.yml --extra-vars  'vmname=19761013web01'
 
 PLAY [Install Apache Web Server] ***********************************************
 
@@ -430,7 +430,7 @@ Finally, similarly to the process to create a VM we can use Ansible to delete it
 **Step 1.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location `http://19761013web01.westeurope.cloudapp.azure.com`.
 
 ```
-$ ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/delete\_vm.yml --extra- vars &quot;vmname=19761013myweb resgrp=ansiblelab&quot;
+$ ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/delete\_vm.yml --extra- vars 'vmname=19761013myweb resgrp=ansiblelab'
 
 [WARNING]: provided hosts list is empty, only localhost is available
 
