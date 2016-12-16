@@ -1,20 +1,29 @@
 # Table of Contents
 
 Objectives and initial setup
+
 Introduction to Ansible
+
 Lab 1: Create Control VM using Azure CLI
+
 Lab 2: Create Service Principal
+
 Lab 3: Install Ansible in the provisioning VM 
+
 Lab 4: Ansible dynamic inventory for Azure
+
 Lab 5: Creating a VM using an Ansible Playbook
+
 Lab 6: Running an Ansible playbook on the new VM
-[Lab 7: Deleting a VM using Ansible - Optional](#Lab 7: Deleting a VM using Ansible - Optional)
-[End the lab](#End the lab)
-[References](#References)
-[](#)
+
+[Lab 7: Deleting a VM using Ansible - Optional](#lab7)
+
+[End the lab](#end)
+
+[References](#ref)
 
 
-# Objectives and initial setup
+# Objectives and initial setup <a name="objectives"></a>
 
 This document contains a lab guide that helps to deploy a basic environment in Azure that allows to test some of the functionality of the integration between Azure and Ansible.
 
@@ -43,7 +52,7 @@ Along this lab some variables will be used, that might (and probably should) loo
 | Azure region | westeuropa |
 
 
-# Introduction to Ansible
+# Introduction to Ansible <a name="intro"></a>
 
 Ansible is a software that falls into the category of **Configuration Management Tools**. These tools are mainly used in order to describe in a declarative language the configuration that should possess a certain machine (or a group of them) in so called playbooks, and then make sure that those machines are configured accordingly.
 
@@ -60,7 +69,7 @@ Additionally, Ansible requires that the managed hosts are documented in a **host
 **Figure**: Ansible architecture example to configure web servers and databases
 
 
-# Lab 1: Create Control VM using Azure CLI
+# Lab 1: Create Control VM using Azure CLI <a name="lab1"></a>
 
 
 
@@ -104,7 +113,7 @@ sudo npm install azure-cli -g
 
 
 
-# Lab 2: Create Service Principal
+# Lab 2: Create Service Principal <a name="lab2"></a>
 
 See for more information: [https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli))
 
@@ -170,7 +179,7 @@ Note the following values of your output, since we will use them later. In this 
 3. Application ID (also known as Client ID): **11111111-1111-1111-1111-111111111111**
 4. Password: **ThisIsTheAppPassword**
 
-# Lab 3: Install Ansible in the provisioning VM
+# Lab 3: Install Ansible in the provisioning VM <a name="lab3"></a>
 
 This section will install Ansible and the Azure Python SDK on the provisioning VM that was created in the previous steps.
 
@@ -243,7 +252,7 @@ chmod 644 ~/.ssh/authorized\_keys
 ```
 ssh-copy-id lab-user@127.0.0.1
 ```
-# Lab 4: Ansible dynamic inventory for Azure
+# Lab 4: Ansible dynamic inventory for Azure <a name="lab4"></a>
 
 Ansible allows to execute operations in machines that can be defined in a static inventory in the machine where Ansible runs. But what if you would like to run Ansible in all the machines in a resource group, but you don&#39;t know whether it is one or one hundred? This is where dynamic inventories come into place, they discover the machines that fulfill certain requirements (such as existing in Azure, or belonging to a certain resource group), and makes Ansible execute operations on them.
 
@@ -270,7 +279,7 @@ ansible -i ./ansible/contrib/inventory/azure\_rm.py all -m ping
 ```
 ansible -i ./azure\_rm.py all -m shell -a '/bin/uname -a'
 ```
-# Lab 5: Creating a VM using an Ansible Playbook
+# Lab 5: Creating a VM using an Ansible Playbook <a name="lab5"></a>
 
 Now that we have Ansible up and running, we can deploy our first playbook in order to create a VM. This playbook will not be executed using the dynamic inventory function, but on the localhost. This will trigger the necessary calls to Azure so that all required objects are created. We will be using the playbook example that was cloned from the Github repository for this lab in previous sections, which you should have stored in `~/Azure-Ansible-Examples/azure-playbooks/new_vm_web.yml`.
 
@@ -382,7 +391,7 @@ vm-00 | SUCCESS => {
 }
 ```
 
-# Lab 6: Running an Ansible playbook on the new VM
+# Lab 6: Running an Ansible playbook on the new VM <a name="lab6"></a>
 
 In this section we will run another Ansible playbook, this time to configure the newly created machine. As example, we will run a very simple playbook that installs a software package (httpd) and downloads an HTML page from a Github repository. If everything works, after running the playbook you will have a fully functional Web server.
 
@@ -413,7 +422,7 @@ PLAY RECAP *********************************************************************
 
 **Step 2.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location http://19761013web01.westeurope.cloudapp.azure.com.
 
-# Lab 7: Deleting a VM using Ansible - Optional
+# Lab 7: Deleting a VM using Ansible - Optional <a name="lab7"></a>
 
 Finally, similarly to the process to create a VM we can use Ansible to delete it, making sure that associated objects such storage account, NICs and Network Security Groups are deleted as well. For that we will use the playbook in this lab&#39;s repository delete\_vm.yml:
 
@@ -439,7 +448,7 @@ localhost                  : ok=2    changed=0    unreachable=0    failed=0
 
 ansible -i ~/ansible/contrib/inventory/azure\_rm.py all -m ping
 
-# Conclusion
+# Conclusion <a name="conclusion"></a>
 
 In this lab we have seen how to use Ansible for two purposes:
 
@@ -449,7 +458,7 @@ On the other side, and probably more importantly, you can use Ansible in order t
 
 All in all, the purpose of this lab is showing to Ansible admins that they can use the same tools in Azure as in their on-premises systems.
 
-# End the lab
+# End the lab <a name="end"></a>
 
 To end the lab, simply delete the resource group that you created in the first place ( **ansiblelab** in our example) from the Azure portal or from the Azure CLI:
 
@@ -496,7 +505,7 @@ info:    ad app show command OK
 ```
 $ azure ad app delete -o 55555555-5555-5555-555555555555
 ```
-# References
+# References <a name="ref"></a>
 
 Useful links:
 
