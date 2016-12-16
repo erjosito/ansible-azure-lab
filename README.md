@@ -443,6 +443,7 @@ TASK [Remove storage account] &ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;
 ok: [localhost]
 
 PLAY RECAP &ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;&ast;
+Play recap **********************************************************
 localhost                  : ok=2    changed=0    unreachable=0    failed=0
 ```
 **Step 2.** Verify that the VM does not exist any more using Ansible&#39;s dynamic inventory functionality:
