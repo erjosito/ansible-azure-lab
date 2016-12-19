@@ -215,7 +215,7 @@ sudo pip install dnspython
 git clone git://github.com/ansible/ansible.git –recursive
 ```
 ```
-git clone git://github.com/erjosito/Azure-Ansible-Examples
+git clone git://github.com/erjosito/ansible-azure-lab
 ```
 
 **Step 4.** Lastly, you need to create a new file in the directory `~/.azure` (create it if it does not exist), using the credentials generated in the previous sections. The filename is `~/.azure/credentials`.
@@ -281,9 +281,9 @@ ansible -i ./azure\_rm.py all -m shell -a '/bin/uname -a'
 ```
 # Lab 5: Creating a VM using an Ansible Playbook <a name="lab5"></a>
 
-Now that we have Ansible up and running, we can deploy our first playbook in order to create a VM. This playbook will not be executed using the dynamic inventory function, but on the localhost. This will trigger the necessary calls to Azure so that all required objects are created. We will be using the playbook example that was cloned from the Github repository for this lab in previous sections, which you should have stored in `~/Azure-Ansible-Examples/azure-playbooks/new_vm_web.yml`.
+Now that we have Ansible up and running, we can deploy our first playbook in order to create a VM. This playbook will not be executed using the dynamic inventory function, but on the localhost. This will trigger the necessary calls to Azure so that all required objects are created. We will be using the playbook example that was cloned from the Github repository for this lab in previous sections, which you should have stored in `~/ansible-azure-lab/new_vm_web.yml`.
 
-1. Step 1.You need to change the public SSH key that you will find inside of `~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml` with your own key, which you can find using this command:
+1. Step 1.You need to change the public SSH key that you will find inside of `~/ansible-azure-lab/new\_vm\_web.yml` with your own key, which you can find using this command:
 
 ```
 cat ~/.ssh/id\_rsa.pub
@@ -322,10 +322,10 @@ info:    network vnet subnet list command OK
 **Step 4.** Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, prefixing it with your birthday).
 
 ```
-ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/new\_vm\_web.yml --extra-vars 'vmname=19761013web01 resgrp=ansiblelab vnet=vm-00-weste-hl2w86f529j7-vnet subnet=vm-00-weste-hl2w86f529j7-snet'
+ansible-playbook ~/ansible-azure-lab/new\_vm\_web.yml --extra-vars 'vmname=19761013web01 resgrp=ansiblelab vnet=vm-00-weste-hl2w86f529j7-vnet subnet=vm-00-weste-hl2w86f529j7-snet'
 ```
 
-**Step 5.** While the playbook is running, have a look in another console inside of the file `~/Azure-Ansible-Examples/azure-playbooks/new_vm_web.yml` , and try to identify the different parts it is made out of. When the playbook has been executed successfully, the output should be similar to this one. If it is not, check the appendix for possible error causes:
+**Step 5.** While the playbook is running, have a look in another console inside of the file `~/ansible-azure-lab/new_vm_web.yml` , and try to identify the different parts it is made out of. When the playbook has been executed successfully, the output should be similar to this one. If it is not, check the appendix for possible error causes:
 
 ```
 [WARNING]: provided hosts list is empty, only localhost is available
@@ -397,10 +397,10 @@ In this section we will run another Ansible playbook, this time to configure the
 
 You will probably be thinking that if the purpose of the exercise is creating a Web server, there are other quicker ways in Azure to do that, for example, using Web Apps. Please consider that we are using this as example, you could be running an Ansible playbook to do anything that Ansible supports, and that is a lot.
 
-**Step 1.** We will be using the example playbook that was downloaded from Github `~/Azure-Ansible-Examples/azure-playbooks/httpd.yml`. Additionally, we will be using the variable `vmname` in order to modify the `hosts` parameter of the playbook, that defines on which host (out of the ones returned by the dynamic inventory script) the playbook will be run.
+**Step 1.** We will be using the example playbook that was downloaded from Github `~/ansible-azure-lab/httpd.yml`. Additionally, we will be using the variable `vmname` in order to modify the `hosts` parameter of the playbook, that defines on which host (out of the ones returned by the dynamic inventory script) the playbook will be run.
 
 ```
-$ ansible-playbook -i ~/ansible/contrib/inventory/azure\_rm.py ~/Azure-Ansible-Examples/azure-playbooks/httpd.yml --extra-vars  'vmname=19761013web01'
+$ ansible-playbook -i ~/ansible/contrib/inventory/azure\_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  'vmname=19761013web01'
 
 PLAY [Install Apache Web Server] ***********************************************
 
@@ -429,7 +429,7 @@ Finally, similarly to the process to create a VM we can use Ansible to delete it
 **Step 1.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location `http://19761013web01.westeurope.cloudapp.azure.com`.
 
 ```
-$ ansible-playbook ~/Azure-Ansible-Examples/azure-playbooks/delete\_vm.yml --extra- vars 'vmname=19761013myweb resgrp=ansiblelab'
+$ ansible-playbook ~/ansible-azure-lab/delete\_vm.yml --extra- vars 'vmname=19761013myweb resgrp=ansiblelab'
 
 [WARNING]: provided hosts list is empty, only localhost is available
 
