@@ -1,20 +1,20 @@
 # Table of Contents
 
-[Objectives and initial setup] (#objectives)
+[Objectives and initial setup](#objectives)
 
-[Introduction to Ansible] (#intro)
+[Introduction to Ansible](#intro)
 
-[Lab 1: Create Control VM using Azure CLI] (#lab1)
+[Lab 1: Create Control VM using Azure CLI](#lab1)
 
-[Lab 2: Create Service Principal] (#lab2)
+[Lab 2: Create Service Principal](#lab2)
 
-[Lab 3: Install Ansible in the provisioning VM] (#lab3)
+[Lab 3: Install Ansible in the provisioning VM](#lab3)
 
-[Lab 4: Ansible dynamic inventory for Azure] (#lab4)
+[Lab 4: Ansible dynamic inventory for Azure](#lab4)
 
-[Lab 5: Creating a VM using an Ansible Playbook] (#lab5)
+[Lab 5: Creating a VM using an Ansible Playbook](#lab5)
 
-[Lab 6: Running an Ansible playbook on the new VM] (#lab6)
+[Lab 6: Running an Ansible playbook on the new VM](#lab6)
 
 [Lab 7: Deleting a VM using Ansible - Optional](#lab7)
 
@@ -102,7 +102,7 @@ sudo yum update -y
 ```
 
 ```
-curl --silent –location https://rpm.nodesource.com/setup\_4.x | sudo bash -
+curl --silent â€“location https://rpm.nodesource.com/setup\_4.x | sudo bash -
 ```
 ```
 sudo yum install -y nodejs
@@ -212,7 +212,7 @@ sudo pip install dnspython
 **Step 3.** We will clone some Github repositories, such as the ansible source code (which includes the dynamic inventory files such as `azure\_rm.py`), and the repository for this lab.
 
 ```
-git clone git://github.com/ansible/ansible.git –recursive
+git clone git://github.com/ansible/ansible.git â€“recursive
 ```
 ```
 git clone git://github.com/erjosito/ansible-azure-lab
@@ -511,6 +511,6 @@ Useful links:
 
 - Ansible web page: [https://www.ansible.com](https://www.ansible.com)
 - Azure portal: [https://portal.azure.com](https://portal.azure.com)
-- Using CLI to créate a Service Principal: [https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli)
-- Ansible documentation – Getting started with Azure: [https://docs.ansible.com/ansible/guide\_azure.html](https://docs.ansible.com/ansible/guide_azure.html)
+- Using CLI to crÃ©ate a Service Principal: [https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli)
+- Ansible documentation â€“ Getting started with Azure: [https://docs.ansible.com/ansible/guide\_azure.html](https://docs.ansible.com/ansible/guide_azure.html)
 - Azure CLI installation on Linux and Mac: [https://azure.microsoft.com/en-us/downloads/cli-tools-install/](https://azure.microsoft.com/en-us/downloads/cli-tools-install/)
