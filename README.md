@@ -734,7 +734,7 @@ All in all, the purpose of this lab is showing to Ansible admins that they can u
 
 # End the lab <a name="end"></a>
 
-To end the lab, simply delete the resource group that you created in the first place ( **ansiblelab** in our example) from the Azure portal or from the Azure CLI:
+To end the lab, simply delete the resource group that you created in the first place (**ansiblelab** in our example) from the Azure portal or from the Azure CLI:
 
 ```
 az group delete ansiblelab
@@ -745,12 +745,15 @@ Optionally, you can delete the service principal and the application that we cre
 ```
 azure ad sp delete -o 44444444-4444-4444-444444444444
 ```
+**Note:** do not forget to replace the GUID above with the real object ID of the Service Principal in your environement
 
 In order to delete the Active Directory application, run this command:
 
 ```
 az ad app delete --id 11111111-1111-1111-1111111111
 ```
+**Note:** do not forget to replace the GUID above with the real Application ID in your environement
+
 
 # Conclusion <a name="conclusion"></a>
 
@@ -768,6 +771,6 @@ Useful links:
 
 - Ansible web page: [https://www.ansible.com](https://www.ansible.com)
 - Azure portal: [https://portal.azure.com](https://portal.azure.com)
-- Using CLI to cr�ate a Service Principal: [https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli)
-- Ansible documentation � Getting started with Azure: [https://docs.ansible.com/ansible/guide\_azure.html](https://docs.ansible.com/ansible/guide_azure.html)
+- Using CLI to create a Service Principal: [https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli)
+- Ansible documentation - Getting started with Azure: [https://docs.ansible.com/ansible/guide\_azure.html](https://docs.ansible.com/ansible/guide_azure.html)
 - Azure CLI installation on Linux and Mac: [https://azure.microsoft.com/en-us/downloads/cli-tools-install/](https://azure.microsoft.com/en-us/downloads/cli-tools-install/)
