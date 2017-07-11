@@ -83,10 +83,10 @@ Additionally, Ansible requires that the managed hosts are documented in a **host
 
 **Step 4.** Login to Azure in your terminal window.
 
-```
-az login
+<pre lang="...">
+<b>az login</b>
 To sign in, use a web browser to open the page https://aka.ms/devicelogin and enter the code XXXXXXXXX to authenticate.
-```
+</pre>
 
 The &#39;az login&#39; command will provide you a code, that you need to introduce (over copy and paste) in the web page http://aka.ms/devicelogin. Open an Internet browser (Firefox is preinstalled int the VM provided by Learn on Demand Systems), go to this URL, and after introducing the code, you will need to authenticate with credentials that are associated to a valid Azure subscription. After a successful login, you can enter the following two commands back in the terminal window in order to create a new resource group, and to set the default resource group accordingly.
 
