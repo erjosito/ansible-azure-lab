@@ -50,7 +50,7 @@ Along this lab some variables will be used, that might (and probably should) loo
 | Name for provisioning VM | 19761013myvm |
 | Username for provisioning VM | lab-user |
 | Password for provisioning VM | Microsoft123! |
-| Name for created VM | 19761013web01 |
+| Name for created VM | your-vm-name |
 | Azure region | westeuropa |
 
 
@@ -127,15 +127,15 @@ az network public-ip create --name masterPip
 
 **Step 6.** The previous command might take 10-15 minutes to run. After you get again the command prompt, connect over SSH to the new VM, using the public IP address displayed in the output of the previous command, and username and password provided in the previous command (lab-user / Microsoft123!). Please **replace 1.2.3.4** with the actual public IP address retrieved out of the last command in Step 2
 
-```
-ssh lab-user@1.2.3.4
+<pre lang="...">
+<b>ssh lab-user@1.2.3.4</b>
 The authenticity of host '1.2.3.4 (1.2.3.4)' can't be established.
 ECDSA key fingerprint is 09:7f:7e:fc:34:d9:9f:ff:a6:5c:de:50:5a:5a:4f:14.
 Are you sure you want to continue connecting (yes/no)? yes
 Warning: Permanently added '1.2.3.4' (ECDSA) to the list of known hosts.
 Password:
 [lab-user@ansibleMaster ~]$
-```
+</pre>
 
 **Step 3.** Install Azure CLI 2.0 in the provisioning machine &#39;ansibleMaster&#39;:
 
@@ -480,32 +480,33 @@ cat ~/.ssh/id_rsa.pub
 
 **Step 2.** You can use the following commands to double check the vnet and subnet that were used to create the master VM. that information (note that the outputs have been truncated so that they fit to the width of this document):
 
-```
-az network vnet list -o table
+<pre lang="...">
+<b>az network vnet list -o table</b>
 Location    Name         ProvisioningState    ResourceGroup    ResourceGuid
 ----------  -----------  -------------------  ---------------  -------------
 westeurope  ansibleVnet  Succeeded            ansiblelab       ...
-```
+</pre>
 
-```
-az network vnet subnet list --vnet-name ansibleVnet -o table
+
+<pre lang="...">
+<b>az network vnet subnet list --vnet-name ansibleVnet -o table</b>
 AddressPrefix    Name           ProvisioningState    ResourceGroup
 ---------------  -------------  -------------------  ---------------
 192.168.1.0/24   ansibleSubnet  Succeeded            ansiblelab
-```
+</pre>
 
 
 **Step 3.** Step 3.	Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, using your birthday as suffix).
 
-```
-ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=web19761013 resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"</b>
 [WARNING]: provided hosts list is empty, only localhost is available
 
 PLAY [CREATE VM PLAYBOOK] *********************************************************
 
 TASK [debug] **********************************************************************
 ok: [localhost] => {
-    "changed": false,                                                                                                    "msg": "Public DNS name web2017060673.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. "
+    "changed": false,                                                                                                    "msg": "Public DNS name your-vm-name.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. "
 }
 
 TASK [Check if DNS is taken] ******************************************************
@@ -527,29 +528,29 @@ TASK [Create VM] ***************************************************************
 changed: [localhost]
 
 PLAY RECAP ************************************************************************
-localhost                  : ok=6    changed=5    unreachable=0    failed=0
-```
+localhost                  : <b>ok=6</b>    changed=5    unreachable=0    <b>failed=0</b>
+</pre>
 
 **Note:** some errors you might get at this step, if you enter a "wrong" VM name (see the appendix for more details):
-- `fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "The storage account named 19761013web01 is already taken. - Reason.already_exists"}`
+- `fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "The storage account named storageaccountname is already taken. - Reason.already_exists"}`
 Resolution: use another name for your VM, that one seems to be already taken
-- `fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "Error creating or updating 19761113web01 - Azure Error: InvalidDomainNameLabel\nMessage`: The domain name label 19761113web01 is invalid. It must conform to the following regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$."}
-Resolution: use another name for your VM following the naming syntax. In this case, the problem was that VM names should not start with a number, but with a lower case letter 
+- `fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "Error creating or updating your-vm-name - Azure Error: InvalidDomainNameLabel\nMessage`: The domain name label for your VM is invalid. It must conform to the following regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$."}
+Resolution: use another name for your VM following the naming syntax. The problem could be that VM names should not start with a number or an upper case letter, but with a lower case letter 
 
 
 **Step 4.** While the playbook is running, have a look in another console inside of the file `~/ansible-azure-lab/new_vm_web.yml` , and try to identify the different parts it is made out of. 
 
 **Step 5.** Step 5.	You can run the dynamic inventory, to verify that the new VM is now detected by Ansible:
 
-```
-python ./ansible/contrib/inventory/azure_rm.py --list | jq
+<pre lang="...">
+<b>python ./ansible/contrib/inventory/azure_rm.py --list | jq</b>
 {
   "westeurope": [
     "ansibleMaster",
-    "web2017060673"
+    "your-vm-name"
   ],
-  "web2017060673": [
-    "web2017060673"
+  "your-vm-name": [
+    "your-vm-name"
   ],
   "_meta": {
     "hostvars": {
@@ -560,13 +561,13 @@ python ./ansible/contrib/inventory/azure_rm.py --list | jq
         "ansible_host": "52.174.19.210",
         "name": "ansibleMaster",
       },
-      "web2017060673": {
+      "your-vm-name": {
         "powerstate": "running",
         "resource_group": "ansiblelab",
         ...
         "ansible_host": "52.174.198.220",
-        "name": "web2017060673",
-        "fqdn": "web2017060673.westeurope.cloudapp.azure.com",
+        "name": "your-vm-name",
+        "fqdn": "your-vm-name.westeurope.cloudapp.azure.com",
       }
     }
   },
@@ -575,19 +576,19 @@ python ./ansible/contrib/inventory/azure_rm.py --list | jq
   ],
   "azure": [
     "ansibleMaster",
-    "web2017060673"
+    "your-vm-name"
   ],
   "ansiblelab": [
     "ansibleMaster",
-    "web2017060673"
+    "your-vm-name"
   ]
 }
-```
+</pre>
 
 **Step 6.** Using the dynamic inventory, run the ping test again, to verify that the dynamic inventory file can see the new machine. The first time you run the test you will have to verify the SSH host key, but successive attempts should run without any interaction being required:
 
-```
-$ ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m ping
+<pre lang="...">
+<b>ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m ping</b>
 The authenticity of host '52.174.47.97 (52.174.47.97)' can't be established.
 ECDSA key fingerprint is 48:89:dc:6d:49:77:2d:85:50:6b:73:90:70:c6:05:5c.
 Are you sure you want to continue connecting (yes/no)? ansibleMaster | SUCCESS => {
@@ -595,23 +596,24 @@ Are you sure you want to continue connecting (yes/no)? ansibleMaster | SUCCESS =
     "ping": "pong"
 }
 yes
-19761013web01 | SUCCESS => {
+your-vm-name | <b>SUCCESS</b> => {
     "changed": false,
     "ping": "pong"
 }
-```
+</pre>
 
-```
-$ ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m ping
-vm-00 | SUCCESS => {
+
+<pre lang="...">
+<b>ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m ping</b>
+ansibleMaster | SUCCESS => {
     "changed": false,
     "ping": "pong"
 }
-19761013web01 | SUCCESS => {
+your-vm-name | SUCCESS => {
     "changed": false,
     "ping": "pong"
 }
-```
+</pre>
 
 **Note:** the first time you connect to the new VM you need to manually accept the SSH fingerprint, further attempts will work without manual intervention
 
@@ -640,26 +642,26 @@ curl: (7) Failed connect to your-vm-name.westeurope.cloudapp.azure.com:80; Conne
 
 And now we will install the HTTP server with our Ansible playbook:
 
-```
-ansible-playbook -i ~/ansible/contrib/inventory/azure_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  "vmname=your-vm-name"
+<pre lang="...">
+<b>ansible-playbook -i ~/ansible/contrib/inventory/azure_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  "vmname=your-vm-name"</b>
 		
 PLAY [Install Apache Web Server] ***********************************************
 		
 TASK [Ensure apache is at the latest version] **********************************
-changed: [19761013web01]
+changed: [your-vm-name]
 		
 TASK [Change permissions of /var/www/html] *************************************
-changed: [19761013web01]
+changed: [your-vm-name]
 		
 TASK [Download index.html] *****************************************************
-changed: [19761013web01]
+changed: [your-vm-name]
 		
 TASK [Ensure apache is running (and enable it at boot)] ************************
-changed: [19761013web01]
+changed: [your-vm-name]
 		
 PLAY RECAP *********************************************************************
-your-vm-name                : ok=4    changed=4    unreachable=0    failed=0
-```
+your-vm-name                : <b>ok=4</b>    changed=4    unreachable=0    <b>failed=0</b>
+</pre>
 
 **Step 2.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location http://your-vm-name.westeurope.cloudapp.azure.com, or using curl from the master VM:
 
@@ -691,10 +693,10 @@ Once the VM is created in Azure, Ansible can be used to configure it via standar
 
 Finally, similarly to the process to create a VM we can use Ansible to delete it, making sure that associated objects such storage account, NICs and Network Security Groups are deleted as well. For that we will use the playbook in this lab&#39;s repository delete\_vm.yml:
 
-**Step 1.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location `http://19761013web01.westeurope.cloudapp.azure.com`.
+**Step 1.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location `http://your-vm-name.westeurope.cloudapp.azure.com`.
 
-```
-ansible-playbook ~/ansible-azure-lab/delete_vm.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab"
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/delete_vm.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab"</b>
 [WARNING]: provided hosts list is empty, only localhost is available
 
 PLAY [Remove Virtual Machine and associated objects] ***************************
@@ -706,8 +708,8 @@ TASK [Remove storage account] **************************************************
 ok: [localhost]
 		
 PLAY RECAP *********************************************************************
-localhost                  : ok=2    changed=0    unreachable=0    failed=0
-```
+localhost                  : <b>ok=2</b>    changed=0    unreachable=0    <b>failed=0</b>
+</pre>
 
 **Step 2.** Verify that the VM does not exist any more using Ansible&#39;s dynamic inventory functionality:
 
@@ -741,13 +743,13 @@ az group delete ansiblelab
 Optionally, you can delete the service principal and the application that we created at the beginning of this lab:
 
 ```
-$ azure ad sp delete -o 44444444-4444-4444-444444444444
+azure ad sp delete -o 44444444-4444-4444-444444444444
 ```
 
 In order to delete the Active Directory application, run this command:
 
 ```
-$ az ad app delete --id 11111111-1111-1111-1111111111
+az ad app delete --id 11111111-1111-1111-1111111111
 ```
 
 # Conclusion <a name="conclusion"></a>
