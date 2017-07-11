@@ -109,8 +109,8 @@ az network vnet create -n ansibleVnet --address-prefixes 192.168.0.0/16 --subnet
 az network public-ip create --name masterPip
 ```
 
-```
-az vm create -n ansibleMaster --image OpenLogic:CentOS:7.3:latest --vnet-name ansibleVnet --subnet ansibleSubnet --public-ip-address masterPip --admin-username lab-user --admin-password Microsoft123!
+<pre lang="...">
+<b>az vm create -n ansibleMaster --image OpenLogic:CentOS:7.3:latest --vnet-name ansibleVnet --subnet ansibleSubnet --public-ip-address masterPip --admin-username lab-user --admin-password Microsoft123!</b>
 {
   "fqdns": "",
   "id": "/subscriptions/3e78e84b-6750-44b9-9d57-d9bba935237a/resourceGroups/ansiblelab/providers/Microsoft.Compute/virtualMachines/ansibleMaster",
@@ -121,7 +121,7 @@ az vm create -n ansibleMaster --image OpenLogic:CentOS:7.3:latest --vnet-name an
   "publicIpAddress": "1.2.3.4",
   "resourceGroup": "ansiblelab"
 }
-```
+</pre>
 
 **Note:** while this command is running (might take between 10 and 15 minutes), you might wait until it finishes, or in the meantime you can temporarily jump to Lab 2 (Create Service Principal) in a new terminal window. When you are finished with Lab 2 you can come back to this point to finish Lab 1.
 
@@ -171,8 +171,8 @@ See for more information: [https://docs.microsoft.com/en-us/azure/azure-resource
 
 **Step 1.** Create Active Directory application for Ansible:
 
-```
-az ad app create --password ThisIsTheAppPassword --display-name ansibleApp --homepage ansible.mydomain.com --identifier-uris ansible.mydomain.com
+<pre lang="...">
+<b>az ad app create --password ThisIsTheAppPassword --display-name ansibleApp --homepage ansible.mydomain.com --identifier-uris ansible.mydomain.com</b>
 {
   "appId": "11111111-1111-1111-1111-111111111111",
   "appPermissions": null,
@@ -186,12 +186,12 @@ az ad app create --password ThisIsTheAppPassword --display-name ansibleApp --hom
   "objectType": "Application",
   "replyUrls": []
 }
-```
+</pre>
 
 **Step 2.** Create Service Principal associated to that application:
 
-```
-az ad sp create --id 11111111-1111-1111-1111-111111111111
+<pre lang="...">
+<b>az ad sp create --id 11111111-1111-1111-1111-111111111111</b>
 {
   "appId": "11111111-1111-1111-1111-111111111111",
   "displayName": "ansibleApp",
@@ -202,12 +202,12 @@ az ad sp create --id 11111111-1111-1111-1111-111111111111
     "ansible.mydomain.com"
   ]
 }
-```
+</pre>
 
 **Step 3.** Find out your subscription and tenant IDs:
 
-```
-az account show
+<pre lang="...">
+<b>az account show</b>
 {
   "environmentName": "AzureCloud",
   "id": "22222222-2222-2222-2222-222222222222",
@@ -220,12 +220,12 @@ az account show
     "type": "user"
   }
 }
-```
+</pre>
 
 **Step 4.**	Assign the Contributor role to the principal for our resource group (remember we have specified the default resource group in Lab 1, so we do not need to specify it again), using the object ID for the service principal:
 
-```
-az role assignment create --assignee 44444444-4444-4444-4444-444444444444 --role contributor
+<pre lang="...">
+<b>az role assignment create --assignee 44444444-4444-4444-4444-444444444444 --role contributor</b>
 {
   "id": "/subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/ansiblelab/providers/Microsoft.Authorization/roleAssignments/66666666-6666-6666-6666-666666666666",
   "name": "66666666-6666-6666-6666-666666666666",
@@ -237,8 +237,7 @@ az role assignment create --assignee 44444444-4444-4444-4444-444444444444 --role
   "resourceGroup": "ansiblelab",
   "type": "Microsoft.Authorization/roleAssignments"
 }
-```
-
+</pre>
 
 Note the following values of your output, since we will use them later. In this guide they are marked in different colors for easier identification:
 
@@ -315,8 +314,8 @@ EOF
 
 **Step 5.** And lastly, we will create a pair of private/public keys, and install the public key in the local machine, to test the correct operation of Ansible.
 
-```
-ssh-keygen -t rsa
+<pre lang="...">
+<b>ssh-keygen -t rsa</b>
 Generating public/private rsa key pair.
 Enter file in which to save the key (/home/lab-user/.ssh/id_rsa):
 Created directory '/home/lab-user/.ssh'.
@@ -338,7 +337,7 @@ The key's randomart image is:
 |   . @ +         |
 |    + o          |
 +-----------------+
-```
+</pre>
 
 ```
 chmod 755 ~/.ssh
@@ -354,11 +353,11 @@ ssh-copy-id lab-user@127.0.0.1
 
 You can verify that when trying to ssh to the local machine, no password will be requested:
 
-```
-[lab-user@ansibleMaster ~]$ ssh 127.0.0.1
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>ssh 127.0.0.1</b>
 Last login: Tue Jun  6 20:39:03 2017 from mymachine.mydomain.com
 [lab-user@ansibleMaster ~]$
-```
+</pre>
 
 ## What we have learnt
 
@@ -372,8 +371,8 @@ Ansible allows to execute operations in machines that can be defined in a static
 
 **Step 1.** In this first step we will test that the dynamic inventory script is running, executing it with the parameter &#39;--list&#39;. This should show JSON text containing information about all the VMs in your subscription.
 
-```
-python ./ansible/contrib/inventory/azure_rm.py --list | jq
+<pre lang="...">
+<b>python ./ansible/contrib/inventory/azure_rm.py --list | jq</b>
 {
   "azure": [
     "ansibleMaster"
@@ -414,7 +413,7 @@ python ./ansible/contrib/inventory/azure_rm.py --list | jq
     }
   }
 }
-```
+</pre>
 
 **Note:** &#39;jq&#39; is a command-line JSON interpreter, that you can use here to make the JSON output readable. Try to use the previous command without the ` | jq` part and see the effect.
 
@@ -422,8 +421,8 @@ python ./ansible/contrib/inventory/azure_rm.py --list | jq
 
 **Step 2.** Now we can test Ansible functionality. But we will not change anything on the target machines, just test reachability with the Ansible function `ping`.
 
-```
-ansible -i ./ansible/contrib/inventory/azure_rm.py all -m ping
+<pre lang="...">
+<b>ansible -i ./ansible/contrib/inventory/azure_rm.py all -m ping</b>
 The authenticity of host '1.2.3.4 (1.2.3.4)' can't be established.
 ECDSA key fingerprint is 09:7f:7e:fc:34:d9:9f:ff:a6:5c:de:50:5a:5a:4f:14.
 Are you sure you want to continue connecting (yes/no)? yes
@@ -431,12 +430,13 @@ ansibleMaster | SUCCESS => {
     "changed": false,
     "ping": "pong"
 }
-ansible -i ./ansible/contrib/inventory/azure_rm.py all -m ping
+
+<b>ansible -i ./ansible/contrib/inventory/azure_rm.py all -m ping</b>
 ansibleMaster | SUCCESS => {
     "changed": false,
     "ping": "pong"
 }
-```
+</pre>
 
 **Note:** The first time you run the command you will have to acknowledge the host's authenticity, after that it should run automatically
 
@@ -453,6 +453,7 @@ resource_groups=ansiblelab
 
 
 **Step 4.** You can actually do much more with ansible, such as running any command on all the VMs returned by the dynamic inventory script, in this case `/bin/uname -a`
+
 ```
 ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m shell -a "/bin/uname -a"
 ```
