@@ -1,20 +1,20 @@
 # Table of Contents
 
-[Objectives and initial setup] (#objectives)
+[Objectives and initial setup](#objectives)
 
-[Introduction to Ansible] (#intro)
+[Introduction to Ansible](#intro)
 
-[Lab 1: Create Control VM using Azure CLI] (#lab1)
+[Lab 1: Create Control VM using Azure CLI](#lab1)
 
-[Lab 2: Create Service Principal] (#lab2)
+[Lab 2: Create Service Principal](#lab2)
 
-[Lab 3: Install Ansible in the provisioning VM] (#lab3)
+[Lab 3: Install Ansible in the provisioning VM](#lab3)
 
-[Lab 4: Ansible dynamic inventory for Azure] (#lab4)
+[Lab 4: Ansible dynamic inventory for Azure](#lab4)
 
-[Lab 5: Creating a VM using an Ansible Playbook] (#lab5)
+[Lab 5: Creating a VM using an Ansible Playbook](#lab5)
 
-[Lab 6: Running an Ansible playbook on the new VM] (#lab6)
+[Lab 6: Running an Ansible playbook on the new VM](#lab6)
 
 [Lab 7: Deleting a VM using Ansible - Optional](#lab7)
 
