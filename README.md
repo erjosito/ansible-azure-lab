@@ -16,7 +16,11 @@
 
 [Lab 6: Running an Ansible playbook on the new VM](#lab6)
 
-[Lab 7: Deleting a VM using Ansible - Optional](#lab7)
+[Lab 7: Running Ansible playbooks periodically for Azure configuration management](#lab7)
+
+[Lab 8: Using Ansible with ARM templates for Azure configuration management](#lab8)
+
+[Lab 9: Deleting a VM using Ansible - Optional](#lab9)
 
 [End the lab](#end)
 
@@ -90,7 +94,7 @@ To sign in, use a web browser to open the page https://aka.ms/devicelogin and en
 
 The &#39;az login&#39; command will provide you a code, that you need to introduce (over copy and paste) in the web page http://aka.ms/devicelogin. Open an Internet browser (Firefox is preinstalled int the VM provided by Learn on Demand Systems), go to this URL, and after introducing the code, you will need to authenticate with credentials that are associated to a valid Azure subscription. After a successful login, you can enter the following two commands back in the terminal window in order to create a new resource group, and to set the default resource group accordingly.
 
-**Step 5.** Step 5.	Create a resource group, define it as the default group for further commands, create a Vnet and a subnet, and a Linux machine in that subnet with a public IP address. Here the commands you need for these tasks:
+**Step 5.** Create a resource group, define it as the default group for further commands, create a Vnet and a subnet, and a Linux machine in that subnet with a public IP address. Here the commands you need for these tasks:
 
 ```
 az group create --name ansiblelab --location westeurope
@@ -496,7 +500,7 @@ AddressPrefix    Name           ProvisioningState    ResourceGroup
 </pre>
 
 
-**Step 3.** Step 3.	Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, using your birthday as suffix).
+**Step 3.** Step 3.	Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, using your birthday as suffix), since the creation of the DNS for the public IP requires that the VM name is unique (region-wide).
 
 <pre lang="...">
 <b>ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"</b>
@@ -508,9 +512,6 @@ TASK [debug] *******************************************************************
 ok: [localhost] => {
     "changed": false,                                                                                                    "msg": "Public DNS name your-vm-name.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. "
 }
-
-TASK [Check if DNS is taken] ******************************************************
-skipping: [localhost]                                                                                                    
 
 TASK [Create storage account] *****************************************************
 changed: [localhost]                                                                                                     
@@ -684,16 +685,266 @@ curl http://your-vm-name.westeurope.cloudapp.azure.com
 </html>
 ```
 
+**Step 3.** Now we could run the previous command periodically, to make sure that the configuration is what we want it to be, or more
+precisely, what is defined in the VM's playbook. In order to do this we will use the cron functionality of Linux, that allows running
+commands at certain schedules. In this lab we will run the command every minute, in a production environment you would probably want a
+lower frequency. In order to add an additional entry to your cron scheduled jobs, you need to enter the following command: 
+
+```
+crontab -e
+```
+
+The default text editor will open, and you need to add a new line at the end of the file (do not forget to replace "your-vm-name" with
+the actual name of your virtual machine):
+
+```
+* * * * * ansible-playbook -i ~/ansible/contrib/inventory/azure_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  "vmname=your-vm-name"
+```
+
+You can check the times that the command was executed with this line (note that you need root privilege, since all cron jobs for all users are logged in that file):
+
+```
+sudo tail /var/log/cron
+```
+
+**Step 3.** Now let us verify that our setup works. You can connect to your VM over SSH (you can use the VM name from your Ansible master, since Azure DNS service will resolve it to the right IP address), and change something. In this lab we will delete our Web page.
+
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>ssh jose@your-vm-name</b> 
+</pre>
+
+<pre lang="...">
+[lab-user@your-vm-name ~]$ <b>rm /var/www/html/index.html</b>
+[lab-user@your-vm-name ~]$ <b>exit</b>
+</pre>
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>curl http://your-vm-name.westeurope.cloudapp.azure.com</b> 
+</pre>
+
+**Step 4.** If you did the previous steps quick enough, the first time you run the curl command you will see that a different page is coming back. If you reissue the previous curl command again after some seconds, cron will have run the playbook again and fixed any issue (such as the absence of index.html), so that you should see our custom page coming back now. 
+
+
 ## What we have learnt
 
 Once the VM is created in Azure, Ansible can be used to configure it via standard Ansible playbooks. Using dynamic inventories is not necessary to have a static list of the existing VMs in Azure.
 
+By periodically running ansible playbooks you can correct changes that deviate VMs from their desired configuration (as defined in the playbooks). We deleted a file, but the change might have been something else such as stopping httpd or even uninstalling it. Note that as we configured the playbook, changing the contents of the index.html file will not suffice for ansible to overwrite it.
 
-# Lab 7: Deleting a VM using Ansible - Optional <a name="lab7"></a>
+# Lab 7: Running Ansible playbooks periodically for configuration management in Azure<a name="lab7"></a>
+
+Similarly to what we learnt in the previous lab, we can run Ansible playbooks periodically not only against VMs, but against Azure itself. The same way that a playbook can correct configuration deviations in a VM, they can equally correct configuration deviation in Azure. See more information about Azure modules in Ansible here: http://docs.ansible.com/ansible/latest/list_of_cloud_modules.html#azure.
+
+**Step 1.** We will use the resources created by the playbook that configured our VM. Verify the objects that the playbook creates from the Ansible master VM. As you can see, it creates a NIC, a Network Security Group (NSG) and a public IP address (obviously other than the VM itself). Other resources are supported by Ansible, such as vnets, resource groups or storage blobs.
+
+```
+more ~/ansible-azure-lab/new_vm_web.yml
+```
+
+**Step 2.** Connect to Azure and change some of the attributes defined in the playbook. In this example we will remove the Web entry of the NSG, so no web access to the VM will be possible any more. From an Azure CLI prompt where you have logged into Azure, run these commands to delete the WEB entry from the NSG associated to your VM. Do not forget to replace "your-vm-name" with the actual name of your virtual machine:
+
+<pre lang="...">
+<b>az network nsg list -g ansiblelab -o table</b>
+Location    Name              ProvisioningState    ResourceGroup    ResourceGuid
+----------  ----------------  -------------------  ---------------  ------------------------------------
+westeurope  ansibleMasterNSG  Succeeded            ansiblelab       d4ab6ce3-a20c-4008-b79a-b72100adca80
+westeurope  <b>your-vm-name</b>      Succeeded            ansiblelab       fc655824-2583-4585-84f1-42e8dfab4575
+</pre>
+
+<pre lang="...">
+<b>az network nsg rule list -g ansiblelab --nsg-name your-vm-name -o table</b>
+Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
+--------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
+Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+Allow     *                             80  Inbound    WEB        102  Tcp       Succeeded     *                 *
+</pre>
+
+**Note:** the columns in the previous output have been modified for readability purposes
+
+<pre lang="...">
+<b>az network nsg rule delete --nsg-name myvm131076 -n WEB</b>
+</pre>
+
+<pre lang="...">
+<b>az network nsg rule list -g ansiblelab --nsg-name your-vm-name -o table</b>
+Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
+--------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
+Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+</pre>
+
+**Note:** the columns in the previous output have been modified for readability purposes
+
+**Step 3.** Verify that Web access to the VM is no longer possible
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>curl http://myvm131076.westeurope.cloudapp.azure.com</b> 
+</pre>
+
+**Step 3.** Similarly to the previous lab, we will create a cron job that will execute our Ansible playbook every minute adding the entry `* * * * * ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"`. Remember that in a production environment you probably do not want to run playbooks that frequently. Do not forget to replace "your-vm-name" with your actual VM's name.
+
+```
+crontab -e
+```
+
+The default text editor will open, and you need to add a new line at the end of the file (do not forget to replace "your-vm-name" with
+the actual name of your virtual machine):
+
+```
+* * * * * ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"
+```
+
+**Step 4.**  You can check the times that the command was executed with this line (note that you need root privilege, since all cron jobs for all users are logged in that file). After that the playbook has run at least once, verify that the NSG is back to its desired state.
+
+```
+sudo tail /var/log/cron
+```
+
+<pre lang="...">
+<b>az network nsg rule list -g ansiblelab --nsg-name your-vm-name -o table</b>
+Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
+--------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
+Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+Allow     *                             80  Inbound    WEB        102  Tcp       Succeeded     *                 *
+</pre>
+
+**Note:** the columns in the previous output have been modified for readability purposes
+
+## What we have learnt
+
+Ansible can be used not only to verify that VMs are configured according to a desired state, but that Azure itself (such as the Network Security Groups in this lab) are configured according to a desired state. This way you can be sure that your infrastructure is deployed exactly as it should.
+
+
+# Lab 8: Using Ansible with ARM templates for Azure configuration management <a name="lab8"></a>
+
+As we saw in the previous lab, Azure modules for Ansible can be used to fix configuration deviations of existing resources supported by Ansible. However, Azure modules for Ansible support a limited amount of resources. For example, there is no Ansible module to create an availability group or a network load balancer at the time of this writing. In order to overcome this limitation, you can use Ansible to deploy a playbook that will refer to an ARM template, and you can offload logic from the playbook to the ARM template.
+
+As additional benefit, the Azure admin does not need to learn the playbook syntax, but can work with the well known constructs of Azure templates.
+
+**Step 1.** We will deploy a second VM, this time with an ARM template. For simplicity reasons we will use a predefined VM name with no public IP address. However, we will create a slightly more complex setup, with an additional vnet, subnet, availability group and load balancer.
+
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
+ [WARNING]: provided hosts list is empty, only localhost is available
+
+PLAY [CREATE ARM Deployment PLAYBOOK] *************************************
+
+TASK [Deploy ARM template] ************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0
+</pre>
+
+**Step 2.** It is important to realize that applying an ARM template to Azure is an idempotent. That is to say, deploying an ARM template once has the same effect that deploying that very same template one hundred times. In other words, you can safely redeploy ARM templates to the same resource group without the concern that duplicate resources will be created. As such, you can schedule the ARM template to be deployed periodically with the Linux cron facility as we have seen in previous labs. However, for the purpose of our lab we will re-run the template manually, since we have already seen twice what the mechanism with cron looks like (and due to the fact that this playbook takes eventually longer to run, so having it running every minute is quite a bad idea). Re-run the template issuing the same command as in step 1:
+
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
+ [WARNING]: provided hosts list is empty, only localhost is available
+
+PLAY [CREATE ARM Deployment PLAYBOOK] *************************************
+
+TASK [Deploy ARM template] ************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0
+</pre>
+
+Note how the template took a shorter time to be deployed (no new resources were configured).
+
+**Step 3.** Now we will introduce a change in one of the objects deployed by the template, for example in the Load Balancer probe. These changes are very difficult to detect, but could completely break your application. Therefore, it is extremely useful having a mechanism to automatically fix these deviations from the desired state. In this case, we will change the TCP port that the healthcheck probe of the load balancer uses to verify the state of the servers:
+
+<pre lang="...">
+<b>az network lb probe update --lb-name mySlb -n myProbe --set port=80</b>
+{
+  "etag": "W/\"226cf561-77a4-41f3-8d31-0448c449d002\"",
+  "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/probes/myProbe",
+  "intervalInSeconds": 15,
+  "loadBalancingRules": [
+    {
+      "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/loadBalancingRules/SSHrule",
+      "resourceGroup": "ansiblelab"
+    }
+  ],
+  "name": "myProbe",
+  "numberOfProbes": 2,
+  <b>"port": 80</b>,
+  "protocol": "Tcp",
+  "provisioningState": "Succeeded",
+  "requestPath": null,
+  "resourceGroup": "ansiblelab"
+}
+</pre>
+
+**Step 4.** Now re-run the template issuing the same command as in step 1 one more time (this time it will take a bit longer to run than in Step 2, since the load balancer needs to be reprovisioned), and verify after the run that the probe is now back to port 22:
+
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
+ [WARNING]: provided hosts list is empty, only localhost is available
+
+PLAY [CREATE ARM Deployment PLAYBOOK] *************************************
+
+TASK [Deploy ARM template] ************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0
+</pre>
+
+<pre lang="...">
+<b>az network lb probe show --lb-name mySlb -n myProbe</b>
+{
+  "etag": "W/\"59a4d2d2-d939-4285-b533-d6c362ab81fe\"",
+  "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/probes/myProbe",
+  "intervalInSeconds": 15,
+  "loadBalancingRules": [
+    {
+      "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/loadBalancingRules/SSHrule",
+      "resourceGroup": "ansiblelab"
+    }
+  ],
+  "name": "myProbe",
+  "numberOfProbes": 2,
+  <b>"port": 22,</b>
+  "protocol": "Tcp",
+  "provisioningState": "Succeeded",
+  "requestPath": null,
+  "resourceGroup": "ansiblelab"
+}
+</pre>
+
+
+## What we have learnt
+
+Lab 7 demonstrated how to use Ansible playbooks to define desired state configuration for certain Azure objects (those supported by the Ansible modules for Azure), and in this lab we have seen how to use Ansible functionality together with ARM templates in order to define desired state via templates for anything in Azure that can be defined with an ARM template.
+
+Idempotency is a critical property of ARM templates that enables this use case.
+
+A valid question is why should you bother with Ansible, since you could just schedule Azure CLI deployments with cron without having to rely in Ansible. While you could certainly do that, there are certain scenarios where you want to use the same mechanism for describing and deploying desired state configuration for all your resources (including the state of the guest OS or deployments in other clouds), and Ansible offers a way to do that. In other words, it is a question of standardization.
+
+In any case, ARM templates offer a way to enhance Ansible support for new Azure services, and allows administrators to describe Azure desired state via templates that will be deployed using Ansible.  
+
+# Lab 9: Deleting a VM using Ansible - Optional <a name="lab9"></a>
 
 Finally, similarly to the process to create a VM we can use Ansible to delete it, making sure that associated objects such storage account, NICs and Network Security Groups are deleted as well. For that we will use the playbook in this lab&#39;s repository delete\_vm.yml:
 
-**Step 1.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location `http://your-vm-name.westeurope.cloudapp.azure.com`.
+**Step 1.** We need to disable the automatic execution of Ansible playbooks, otherwise you will not see the effect of removing a VM, since the next Ansible pass would recreate it. Edit the crontab file with the following commnad, and comment all lines with a hash symbol at the beginning of each line.
+
+```
+crontab -e
+```
+
+Your crontab file should look like this:
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>crontab -l</b>
+#* * * * * /usr/bin/ansible-playbook -i ~/ansible/contrib/inventory/azure_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  "vmname=myvm131076"
+#* * * * * /usr/bin/ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=myvm131076 resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"
+</pre>
+
+
+**Step 2.** You can now remove the VM created at the beginning of this lab using the provided playbook. Do not forget to replace "your-vm-name" with the actual name of your Virtual Machine:
 
 <pre lang="...">
 <b>ansible-playbook ~/ansible-azure-lab/delete_vm.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab"</b>
@@ -711,7 +962,7 @@ PLAY RECAP *********************************************************************
 localhost                  : <b>ok=2</b>    changed=0    unreachable=0    <b>failed=0</b>
 </pre>
 
-**Step 2.** Verify that the VM does not exist any more using Ansible&#39;s dynamic inventory functionality:
+**Step 3.** Verify that the VM does not exist any more using Ansible&#39;s dynamic inventory functionality:
 
 ```
 ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m ping
@@ -730,7 +981,9 @@ On one side, Ansible can be used in order to create VMs, in a similar manner tha
 
 On the other side, and probably more importantly, you can use Ansible in order to manage the configuration of all your virtual machines in Azure. Whether you have one VM or one thousand, Ansible will discover all of them (with its dynamic inventory functionality) and apply any playbooks that you have defined, making server management at scale much easier.
 
-All in all, the purpose of this lab is showing to Ansible admins that they can use the same tools in Azure as in their on-premises systems.
+Lastly, by automating periodic execution of Ansible playbooks you can make sure that the configuration of Azure resources (including guest OS configuration) matches the desired state defined in Ansible playbooks, and optionally in Azure ARM templates. And all that without installing any agent, due to the agentless nature of Ansible.
+
+All in all, the ultimate purpose of this lab is proving to Ansible admins that you can use the same tools in Azure as in your on-premises systems.
 
 # End the lab <a name="end"></a>
 
