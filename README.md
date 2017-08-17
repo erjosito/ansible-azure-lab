@@ -16,9 +16,11 @@
 
 [Lab 6: Running an Ansible playbook on the new VM](#lab6)
 
-[Lab 7: Running Ansible playbooks periodically for configuration management in Azure](#lab7)
+[Lab 7: Running Ansible playbooks periodically for Azure configuration management](#lab7)
 
-[Lab 8: Deleting a VM using Ansible - Optional](#lab8)
+[Lab 9: Using Ansible with ARM templates for Azure configuration management](#lab8)
+
+[Lab 9: Deleting a VM using Ansible - Optional](#lab9)
 
 [End the lab](#end)
 
@@ -827,7 +829,10 @@ As additional benefit, the Azure admin does not need to learn the playbook synta
 
 **Step 1.** We will deploy a second VM, this time with an ARM template. For simplicity reasons we will use a predefined VM name with no public IP address. However, we will create a slightly more complex setup, with an additional vnet, subnet, availability group and load balancer.
 
-az group deployment create 
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab"</b>
+
+</pre>
 
 
 # Lab 9: Deleting a VM using Ansible - Optional <a name="lab9"></a>
