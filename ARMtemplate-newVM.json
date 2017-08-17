@@ -8,7 +8,7 @@
 			"comments": "Availability set",
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "myAvSet",
-			"apiVersion": "2016-03-30",
+			"apiVersion": "2017-03-30",
 			"location": "[resourceGroup().location]"
 		},
         {
@@ -109,7 +109,7 @@
             "comments": "Deploy VM",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "mySecondVM",
-            "apiVersion": "2015-06-15",
+            "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
             "properties": {
                 "availabilitySet": {

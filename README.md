@@ -500,7 +500,7 @@ AddressPrefix    Name           ProvisioningState    ResourceGroup
 </pre>
 
 
-**Step 3.** Step 3.	Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, using your birthday as suffix).
+**Step 3.** Step 3.	Now we have all the information we need, and we can run all playbook with all required variables. Note that variables can be defined inside of playbooks, or can be entered at runtime along the ansible-playbook command with the `--extra-vars` option. As VM name please use **only lower case letters and numbers** (no hyphens, underscore signs or upper case letters), and a unique name, for example, using your birthday as suffix), since the creation of the DNS for the public IP requires that the VM name is unique (region-wide).
 
 <pre lang="...">
 <b>ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"</b>
@@ -512,9 +512,6 @@ TASK [debug] *******************************************************************
 ok: [localhost] => {
     "changed": false,                                                                                                    "msg": "Public DNS name your-vm-name.westeurope.cloudapp.azure.com resolved to IP NXDOMAIN. "
 }
-
-TASK [Check if DNS is taken] ******************************************************
-skipping: [localhost]                                                                                                    
 
 TASK [Create storage account] *****************************************************
 changed: [localhost]                                                                                                     
@@ -830,7 +827,7 @@ As additional benefit, the Azure admin does not need to learn the playbook synta
 **Step 1.** We will deploy a second VM, this time with an ARM template. For simplicity reasons we will use a predefined VM name with no public IP address. However, we will create a slightly more complex setup, with an additional vnet, subnet, availability group and load balancer.
 
 <pre lang="...">
-<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab"</b>
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
 
 </pre>
 
