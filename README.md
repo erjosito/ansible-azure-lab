@@ -16,7 +16,9 @@
 
 [Lab 6: Running an Ansible playbook on the new VM](#lab6)
 
-[Lab 7: Deleting a VM using Ansible - Optional](#lab7)
+[Lab 7: Running Ansible playbooks periodically for configuration management in Azure](#lab7)
+
+[Lab 8: Deleting a VM using Ansible - Optional](#lab8)
 
 [End the lab](#end)
 
@@ -684,12 +686,151 @@ curl http://your-vm-name.westeurope.cloudapp.azure.com
 </html>
 ```
 
+**Step 3.** Now we could run the previous command periodically, to make sure that the configuration is what we want it to be, or more
+precisely, what is defined in the VM's playbook. In order to do this we will use the cron functionality of Linux, that allows running
+commands at certain schedules. In this lab we will run the command every minute, in a production environment you would probably want a
+lower frequency. In order to add an additional entry to your cron scheduled jobs, you need to enter the following command: 
+
+```
+crontab -e
+```
+
+The default text editor will open, and you need to add a new line at the end of the file (do not forget to replace "your-vm-name" with
+the actual name of your virtual machine):
+
+```
+* * * * * ansible-playbook -i ~/ansible/contrib/inventory/azure_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  "vmname=your-vm-name"
+```
+
+You can check the times that the command was executed with this line (note that you need root privilege, since all cron jobs for all users are logged in that file):
+
+```
+sudo tail /var/log/cron
+```
+
+**Step 3.** Now let us verify that our setup works. You can connect to your VM over SSH (you can use the VM name from your Ansible master, since Azure DNS service will resolve it to the right IP address), and change something. In this lab we will delete our Web page.
+
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>ssh jose@your-vm-name</b> 
+</pre>
+
+<pre lang="...">
+[lab-user@your-vm-name ~]$ <b>rm /var/www/html/index.html</b>
+[lab-user@your-vm-name ~]$ <b>exit</b>
+</pre>
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>curl http://your-vm-name.westeurope.cloudapp.azure.com</b> 
+</pre>
+
+**Step 4.** If you did the previous steps quick enough, the first time you run the curl command you will see that a different page is coming back. If you reissue the previous curl command again after some seconds, cron will have run the playbook again and fixed any issue (such as the absence of index.html), so that you should see our custom page coming back now. 
+
+
 ## What we have learnt
 
 Once the VM is created in Azure, Ansible can be used to configure it via standard Ansible playbooks. Using dynamic inventories is not necessary to have a static list of the existing VMs in Azure.
 
+By periodically running ansible playbooks you can correct changes that deviate VMs from their desired configuration (as defined in the playbooks). We deleted a file, but the change might have been something else such as stopping httpd or even uninstalling it. Note that as we configured the playbook, changing the contents of the index.html file will not suffice for ansible to overwrite it.
 
-# Lab 7: Deleting a VM using Ansible - Optional <a name="lab7"></a>
+# Lab 7: Running Ansible playbooks periodically for configuration management in Azure<a name="lab7"></a>
+
+Similarly to what we learnt in the previous lab, we can run Ansible playbooks periodically not only against VMs, but against Azure itself. The same way that a playbook can correct configuration deviations in a VM, they can equally correct configuration deviation in Azure. See more information about Azure modules in Ansible here: http://docs.ansible.com/ansible/latest/list_of_cloud_modules.html#azure.
+
+**Step 1.** We will use the resources created by the playbook that configured our VM. Verify the objects that the playbook creates from the Ansible master VM. As you can see, it creates a NIC, a Network Security Group (NSG) and a public IP address (obviously other than the VM itself). Other resources are supported by Ansible, such as vnets, resource groups or storage blobs.
+
+```
+more ~/ansible-azure-lab/new_vm_web.yml
+```
+
+**Step 2.** Connect to Azure and change some of the attributes defined in the playbook. In this example we will remove the Web entry of the NSG, so no web access to the VM will be possible any more. From an Azure CLI prompt where you have logged into Azure, run these commands to delete the WEB entry from the NSG associated to your VM. Do not forget to replace "your-vm-name" with the actual name of your virtual machine:
+
+<pre lang="...">
+<b>az network nsg list -g ansiblelab -o table</b>
+Location    Name              ProvisioningState    ResourceGroup    ResourceGuid
+----------  ----------------  -------------------  ---------------  ------------------------------------
+westeurope  ansibleMasterNSG  Succeeded            ansiblelab       d4ab6ce3-a20c-4008-b79a-b72100adca80
+westeurope  <b>your-vm-name</b>      Succeeded            ansiblelab       fc655824-2583-4585-84f1-42e8dfab4575
+</pre>
+
+<pre lang="...">
+<b>az network nsg rule list -g ansiblelab --nsg-name your-vm-name -o table</b>
+Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
+--------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
+Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+Allow     *                             80  Inbound    WEB        102  Tcp       Succeeded     *                 *
+</pre>
+
+**Note:** the columns in the previous output have been modified for readability purposes
+
+<pre lang="...">
+<b>az network nsg rule delete --nsg-name myvm131076 -n WEB</b>
+</pre>
+
+<pre lang="...">
+<b>az network nsg rule list -g ansiblelab --nsg-name your-vm-name -o table</b>
+Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
+--------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
+Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+</pre>
+
+**Step 3.** Verify that Web access to the VM is no longer possible
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>curl http://myvm131076.westeurope.cloudapp.azure.com</b> 
+</pre>
+
+**Step 3.** Similarly to the previous lab, we will create a cron job that will execute our Ansible playbook every minute adding the entry `* * * * * ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"`. Remember that in a production environment you probably do not want to run playbooks that frequently. Do not forget to replace "your-vm-name" with your actual VM's name.
+
+```
+crontab -e
+```
+
+The default text editor will open, and you need to add a new line at the end of the file (do not forget to replace "your-vm-name" with
+the actual name of your virtual machine):
+
+```
+* * * * * ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"
+```
+
+**Step 4.**  You can check the times that the command was executed with this line (note that you need root privilege, since all cron jobs for all users are logged in that file). After that the playbook has run at least once, verify that the NSG is NOT back to its desired state.
+
+```
+sudo tail /var/log/cron
+```
+
+<pre lang="...">
+<b>az network nsg rule list -g ansiblelab --nsg-name your-vm-name -o table</b>
+Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
+--------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
+Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+</pre>
+
+Why is this? The reason is because Ansible just checks that the resources exist, and if they exist they will not be overwritten.
+
+**Step 5.** To verify this, now delete the complete VM, and after a few minutes Ansible will have recreated it.
+
+```
+az vm delete -g ansiblelab -n your-vm-name
+```
+
+```
+az vm list -g ansiblelab -o table
+```
+
+
+# Lab 8: Using Ansible with ARM templates for Azure configuration management <a name="lab8"></a>
+
+As we saw in the previous lab, Azure modules for Ansible do not fix configuration deviations of existing resources. Besides, Azure modules for Ansible support a limited amount of resources. For example, there is no Ansible module to create an availability group. In order to overcome both limitations, we will use Ansible to deploy a playbook that will refer to an ARM template, and the bulk of the logic will be in the ARM template, not in the playbook.
+
+As additional benefit, the Azure admin does not need to learn the playbook syntax, but can work with the well known constructs of Azure templates.
+
+**Step 1.** We will deploy a second VM, this time with an ARM template. For simplicity reasons we will use a predefined VM name with no public IP address. However, we will create a slightly more complex setup, with an additional vnet, subnet, availability group and load balancer.
+
+az group deployment create 
+
+
+# Lab 9: Deleting a VM using Ansible - Optional <a name="lab9"></a>
 
 Finally, similarly to the process to create a VM we can use Ansible to delete it, making sure that associated objects such storage account, NICs and Network Security Groups are deleted as well. For that we will use the playbook in this lab&#39;s repository delete\_vm.yml:
 
