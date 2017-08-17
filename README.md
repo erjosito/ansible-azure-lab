@@ -773,6 +773,8 @@ Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol 
 Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
 </pre>
 
+**Note:** the columns in the previous output have been modified for readability purposes
+
 **Step 3.** Verify that Web access to the VM is no longer possible
 
 <pre lang="...">
@@ -792,7 +794,7 @@ the actual name of your virtual machine):
 * * * * * ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"
 ```
 
-**Step 4.**  You can check the times that the command was executed with this line (note that you need root privilege, since all cron jobs for all users are logged in that file). After that the playbook has run at least once, verify that the NSG is NOT back to its desired state.
+**Step 4.**  You can check the times that the command was executed with this line (note that you need root privilege, since all cron jobs for all users are logged in that file). After that the playbook has run at least once, verify that the NSG is back to its desired state.
 
 ```
 sudo tail /var/log/cron
@@ -803,24 +805,19 @@ sudo tail /var/log/cron
 Access    DestAddressPrefix  DestPortRange  Direction  Name  Priority  Protocol  Provisioning  SrcAddressPrefix  SrcPortRange
 --------  -----------------  -------------  ---------  ----  --------  --------  ------------  ----------------  ------------
 Allow     *                             22  Inbound    SSH        101  Tcp       Succeeded     *                 *
+Allow     *                             80  Inbound    WEB        102  Tcp       Succeeded     *                 *
 </pre>
 
-Why is this? The reason is because Ansible just checks that the resources exist, and if they exist they will not be overwritten.
+**Note:** the columns in the previous output have been modified for readability purposes
 
-**Step 5.** To verify this, now delete the complete VM, and after a few minutes Ansible will have recreated it.
+## What we have learnt
 
-```
-az vm delete -g ansiblelab -n your-vm-name
-```
-
-```
-az vm list -g ansiblelab -o table
-```
+Ansible can be used not only to verify that VMs are configured according to a desired state, but that Azure itself (such as the Network Security Groups in this lab) are configured according to a desired state. This way you can be sure that your infrastructure is deployed exactly as it should.
 
 
 # Lab 8: Using Ansible with ARM templates for Azure configuration management <a name="lab8"></a>
 
-As we saw in the previous lab, Azure modules for Ansible do not fix configuration deviations of existing resources. Besides, Azure modules for Ansible support a limited amount of resources. For example, there is no Ansible module to create an availability group. In order to overcome both limitations, we will use Ansible to deploy a playbook that will refer to an ARM template, and the bulk of the logic will be in the ARM template, not in the playbook.
+As we saw in the previous lab, Azure modules for Ansible can be used to fix configuration deviations of existing resources supported by Ansible. However, Azure modules for Ansible support a limited amount of resources. For example, there is no Ansible module to create an availability group or a network load balancer at the time of this writing. In order to overcome this limitation, you can use Ansible to deploy a playbook that will refer to an ARM template, and you can offload logic from the playbook to the ARM template.
 
 As additional benefit, the Azure admin does not need to learn the playbook syntax, but can work with the well known constructs of Azure templates.
 
@@ -828,7 +825,93 @@ As additional benefit, the Azure admin does not need to learn the playbook synta
 
 <pre lang="...">
 <b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
+ [WARNING]: provided hosts list is empty, only localhost is available
 
+PLAY [CREATE ARM Deployment PLAYBOOK] *************************************
+
+TASK [Deploy ARM template] ************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0
+</pre>
+
+**Step 2.** It is important to realize that applying an ARM template to Azure is an idempotent. That is to say, deploying an ARM template once has the same effect that deploying that very same template one hundred times. In other words, you can safely redeploy ARM templates to the same resource group without the concern that duplicate resources will be created. As such, you can schedule the ARM template to be deployed periodically with the Linux cron facility as we have seen in previous labs. However, for the purpose of our lab we will re-run the template manually, since we have already seen twice what the mechanism with cron looks like (and due to the fact that this playbook takes eventually longer to run, so having it running every minute is quite a bad idea). Re-run the template issuing the same command as in step 1:
+
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
+ [WARNING]: provided hosts list is empty, only localhost is available
+
+PLAY [CREATE ARM Deployment PLAYBOOK] *************************************
+
+TASK [Deploy ARM template] ************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0
+</pre>
+
+Note how the template took a shorter time to be deployed (no new resources were configured).
+
+**Step 3.** Now we will introduce a change in one of the objects deployed by the template, for example in the Load Balancer probe. These changes are very difficult to detect, but could completely break your application. Therefore, it is extremely useful having a mechanism to automatically fix these deviations from the desired state. In this case, we will change the TCP port that the healthcheck probe of the load balancer uses to verify the state of the servers:
+
+<pre lang="...">
+<b>az network lb probe update --lb-name mySlb -n myProbe --set port=80</b>
+{
+  "etag": "W/\"226cf561-77a4-41f3-8d31-0448c449d002\"",
+  "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/probes/myProbe",
+  "intervalInSeconds": 15,
+  "loadBalancingRules": [
+    {
+      "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/loadBalancingRules/SSHrule",
+      "resourceGroup": "ansiblelab"
+    }
+  ],
+  "name": "myProbe",
+  "numberOfProbes": 2,
+  <b>"port": 80</b>,
+  "protocol": "Tcp",
+  "provisioningState": "Succeeded",
+  "requestPath": null,
+  "resourceGroup": "ansiblelab"
+}
+</pre>
+
+**Step 4.** Now re-run the template issuing the same command as in step 1 one more time, and verify after the run that the probe is now back to port 22:
+
+<pre lang="...">
+<b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
+ [WARNING]: provided hosts list is empty, only localhost is available
+
+PLAY [CREATE ARM Deployment PLAYBOOK] *************************************
+
+TASK [Deploy ARM template] ************************************************
+changed: [localhost]
+
+PLAY RECAP ****************************************************************
+localhost                  : ok=1    changed=1    unreachable=0    failed=0
+</pre>
+
+<pre lang="...">
+<b>az network lb probe show --lb-name mySlb -n myProbe</b>
+{
+  "etag": "W/\"59a4d2d2-d939-4285-b533-d6c362ab81fe\"",
+  "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/probes/myProbe",
+  "intervalInSeconds": 15,
+  "loadBalancingRules": [
+    {
+      "id": "/subscriptions/e7da9914-9b05-4891-893c-546cb7b0422e/resourceGroups/ansiblelab/providers/Microsoft.Network/loadBalancers/mySlb/loadBalancingRules/SSHrule",
+      "resourceGroup": "ansiblelab"
+    }
+  ],
+  "name": "myProbe",
+  "numberOfProbes": 2,
+  <b>"port": 22,</b>
+  "protocol": "Tcp",
+  "provisioningState": "Succeeded",
+  "requestPath": null,
+  "resourceGroup": "ansiblelab"
+}
 </pre>
 
 
