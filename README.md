@@ -18,7 +18,7 @@
 
 [Lab 7: Running Ansible playbooks periodically for Azure configuration management](#lab7)
 
-[Lab 9: Using Ansible with ARM templates for Azure configuration management](#lab8)
+[Lab 8: Using Ansible with ARM templates for Azure configuration management](#lab8)
 
 [Lab 9: Deleting a VM using Ansible - Optional](#lab9)
 
@@ -877,7 +877,7 @@ Note how the template took a shorter time to be deployed (no new resources were 
 }
 </pre>
 
-**Step 4.** Now re-run the template issuing the same command as in step 1 one more time, and verify after the run that the probe is now back to port 22:
+**Step 4.** Now re-run the template issuing the same command as in step 1 one more time (this time it will take a bit longer to run than in Step 2, since the load balancer needs to be reprovisioned), and verify after the run that the probe is now back to port 22:
 
 <pre lang="...">
 <b>ansible-playbook ~/ansible-azure-lab/new_ARM_deployment.yml --extra-vars "resgrp=ansiblelab location=westeurope"</b>
