@@ -3,7 +3,7 @@
   connection: local
   gather_facts: False
   vars:
-    # Variable 'resgrp' need to be provided at command line with arg --extra-vars
+    # Variables 'resgrp' and 'location' need to be provided at command line with arg --extra-vars
     templateLink: 'https://raw.githubusercontent.com/erjosito/ansible-azure-lab/cron/ARMtemplate-newVM.json'
     # No parameters required for this template
     #paramsLink: ''
@@ -13,5 +13,7 @@
     azure_rm_deployment:
         state: present
         resource_group_name: '{{ resgrp }}'
+        # location seems to be not optional
+        location: '{{ location }}'
         template_link: '{{ templateLink }}'
         #parameters_link: '{{ paramsLink }}'

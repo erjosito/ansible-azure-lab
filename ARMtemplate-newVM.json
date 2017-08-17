@@ -80,7 +80,7 @@
             "type": "Microsoft.Network/virtualNetworks",
             "name": "myVnet",
             "apiVersion": "2016-03-30",
-            "location": "westeurope",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
