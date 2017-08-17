@@ -77,13 +77,13 @@
             },
             "resources": [],
             "dependsOn": [
-                "myVnet",
-                "mySlb",
-                "myNsg"
+                "[resourceId('Microsoft.Network/virtualNetworks', 'myVnet')]",
+                "[resourceId('Microsoft.Network/loadBalancers', 'mySlb')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'myNsg')]"
             ]
         },
         {
-            "comments": "Generalized from resource: '/subscriptions/3e78e84b-6750-44b9-9d57-d9bba935237a/resourceGroups/PermanentLab/providers/Microsoft.Network/virtualNetworks/PermanentLab-vnet'.",
+            "comments": "Create vnet with 2 subnets",
             "type": "Microsoft.Network/virtualNetworks",
             "name": "myVnet",
             "apiVersion": "2016-03-30",
@@ -162,8 +162,8 @@
             },
             "resources": [],
             "dependsOn": [
-                "myNic",
-                "myAvSet"
+                "[resourceId('Microsoft.Network/networkInterfaces', 'myNic')]",
+                "[resourceId('Microsoft.Compute/availabilitySets', 'myAvSet')]"
             ]
         },
         {
@@ -229,6 +229,7 @@
             },
             "resources": [],
             "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'myVnet')]"
             ]
         }
    ]
