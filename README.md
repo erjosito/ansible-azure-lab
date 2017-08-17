@@ -915,11 +915,36 @@ localhost                  : ok=1    changed=1    unreachable=0    failed=0
 </pre>
 
 
+## What we have learnt
+
+Lab 7 demonstrated how to use Ansible playbooks to define desired state configuration for certain Azure objects (those supported by the Ansible modules for Azure), and in this lab we have seen how to use Ansible functionality together with ARM templates in order to define desired state via templates for anything in Azure that can be defined with an ARM template.
+
+Idempotency is a critical property of ARM templates that enables this use case.
+
+A valid question is why should you bother with Ansible, since you could just schedule Azure CLI deployments with cron without having to rely in Ansible. While you could certainly do that, there are certain scenarios where you want to use the same mechanism for describing and deploying desired state configuration for all your resources (including the state of the guest OS or deployments in other clouds), and Ansible offers a way to do that. In other words, it is a question of standardization.
+
+In any case, ARM templates offer a way to enhance Ansible support for new Azure services, and allows administrators to describe Azure desired state via templates that will be deployed using Ansible.  
+
 # Lab 9: Deleting a VM using Ansible - Optional <a name="lab9"></a>
 
 Finally, similarly to the process to create a VM we can use Ansible to delete it, making sure that associated objects such storage account, NICs and Network Security Groups are deleted as well. For that we will use the playbook in this lab&#39;s repository delete\_vm.yml:
 
-**Step 1.** Now you can test that there is a Web page on our VM using your Internet browser and trying to access the location `http://your-vm-name.westeurope.cloudapp.azure.com`.
+**Step 1.** We need to disable the automatic execution of Ansible playbooks, otherwise you will not see the effect of removing a VM, since the next Ansible pass would recreate it. Edit the crontab file with the following commnad, and comment all lines with a hash symbol at the beginning of each line.
+
+```
+crontab -e
+```
+
+Your crontab file should look like this:
+
+<pre lang="...">
+[lab-user@ansibleMaster ~]$ <b>crontab -l</b>
+#* * * * * /usr/bin/ansible-playbook -i ~/ansible/contrib/inventory/azure_rm.py ~/ansible-azure-lab/httpd.yml --extra-vars  "vmname=myvm131076"
+#* * * * * /usr/bin/ansible-playbook ~/ansible-azure-lab/new_vm_web.yml --extra-vars "vmname=myvm131076 resgrp=ansiblelab vnet=ansibleVnet subnet=ansibleSubnet"
+</pre>
+
+
+**Step 2.** You can now remove the VM created at the beginning of this lab using the provided playbook. Do not forget to replace "your-vm-name" with the actual name of your Virtual Machine:
 
 <pre lang="...">
 <b>ansible-playbook ~/ansible-azure-lab/delete_vm.yml --extra-vars "vmname=your-vm-name resgrp=ansiblelab"</b>
@@ -937,7 +962,7 @@ PLAY RECAP *********************************************************************
 localhost                  : <b>ok=2</b>    changed=0    unreachable=0    <b>failed=0</b>
 </pre>
 
-**Step 2.** Verify that the VM does not exist any more using Ansible&#39;s dynamic inventory functionality:
+**Step 3.** Verify that the VM does not exist any more using Ansible&#39;s dynamic inventory functionality:
 
 ```
 ansible -i ~/ansible/contrib/inventory/azure_rm.py all -m ping
@@ -956,7 +981,9 @@ On one side, Ansible can be used in order to create VMs, in a similar manner tha
 
 On the other side, and probably more importantly, you can use Ansible in order to manage the configuration of all your virtual machines in Azure. Whether you have one VM or one thousand, Ansible will discover all of them (with its dynamic inventory functionality) and apply any playbooks that you have defined, making server management at scale much easier.
 
-All in all, the purpose of this lab is showing to Ansible admins that they can use the same tools in Azure as in their on-premises systems.
+Lastly, by automating periodic execution of Ansible playbooks you can make sure that the configuration of Azure resources (including guest OS configuration) matches the desired state defined in Ansible playbooks, and optionally in Azure ARM templates. And all that without installing any agent, due to the agentless nature of Ansible.
+
+All in all, the ultimate purpose of this lab is proving to Ansible admins that you can use the same tools in Azure as in your on-premises systems.
 
 # End the lab <a name="end"></a>
 
