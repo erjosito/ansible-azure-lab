@@ -55,7 +55,7 @@ Along this lab some variables will be used, that might (and probably should) loo
 | Username for provisioning VM | lab-user |
 | Password for provisioning VM | Microsoft123! |
 | Name for created VM | your-vm-name |
-| Azure region | westeuropa |
+| Azure region | westeurope |
 
 
 # Introduction to Ansible <a name="intro"></a>
