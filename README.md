@@ -84,8 +84,12 @@ Additionally, Ansible requires that the managed hosts are documented in a **host
 
 **Step 3.** Open a terminal window. In Windows, for example by hitting the Windows key in your keyboard, typing &#39;cmd&#39; (without the quotes) and hitting the Enter key. You might want to maximize the command Window so that it fills your desktop.
 
+**Step 4.** Update the existing Azure CLI to the latest version. Note that this will only work in certain Linux distributions. If you are using the VM provided by Learn On Demand Systems, you can (and you should) issue the following command to update the Azure CLI. For other distros or for Windows please refer to the Azure CLI 2.0 documentation.
+```
+az component update
+```
 
-**Step 4.** Login to Azure in your terminal window.
+**Step 5.** Login to Azure in your terminal window.
 
 <pre lang="...">
 <b>az login</b>
@@ -94,7 +98,7 @@ To sign in, use a web browser to open the page https://aka.ms/devicelogin and en
 
 The &#39;az login&#39; command will provide you a code, that you need to introduce (over copy and paste) in the web page http://aka.ms/devicelogin. Open an Internet browser (Firefox is preinstalled int the VM provided by Learn on Demand Systems), go to this URL, and after introducing the code, you will need to authenticate with credentials that are associated to a valid Azure subscription. After a successful login, you can enter the following two commands back in the terminal window in order to create a new resource group, and to set the default resource group accordingly.
 
-**Step 5.** Create a resource group, define it as the default group for further commands, create a Vnet and a subnet, and a Linux machine in that subnet with a public IP address. Here the commands you need for these tasks:
+**Step 6.** Create a resource group, define it as the default group for further commands, create a Vnet and a subnet, and a Linux machine in that subnet with a public IP address. Here the commands you need for these tasks:
 
 ```
 az group create --name ansiblelab --location westeurope
@@ -114,7 +118,7 @@ az network public-ip create --name masterPip
 ```
 
 <pre lang="...">
-<b>az vm create -n ansibleMaster --image OpenLogic:CentOS:7.3:latest --vnet-name ansibleVnet --subnet ansibleSubnet --public-ip-address masterPip --admin-username lab-user --admin-password Microsoft123!</b>
+<b>az vm create -n ansibleMaster --image OpenLogic:CentOS:7.3:latest --vnet-name ansibleVnet --subnet ansibleSubnet --public-ip-address masterPip --authentication-type password --admin-username lab-user --admin-password Microsoft123!</b>
 {
   "fqdns": "",
   "id": "/subscriptions/3e78e84b-6750-44b9-9d57-d9bba935237a/resourceGroups/ansiblelab/providers/Microsoft.Compute/virtualMachines/ansibleMaster",
@@ -129,7 +133,7 @@ az network public-ip create --name masterPip
 
 **Note:** while this command is running (might take between 10 and 15 minutes), you might wait until it finishes, or in the meantime you can temporarily jump to Lab 2 (Create Service Principal) in a new terminal window. When you are finished with Lab 2 you can come back to this point to finish Lab 1.
 
-**Step 6.** The previous command might take 10-15 minutes to run. After you get again the command prompt, connect over SSH to the new VM, using the public IP address displayed in the output of the previous command, and username and password provided in the previous command (lab-user / Microsoft123!). Please **replace 1.2.3.4** with the actual public IP address retrieved out of the last command in Step 2
+**Step 7.** The previous command might take 10-15 minutes to run. After you get again the command prompt, connect over SSH to the new VM, using the public IP address displayed in the output of the previous command, and username and password provided in the previous command (lab-user / Microsoft123!). Please **replace 1.2.3.4** with the actual public IP address retrieved out of the last command in Step 2
 
 <pre lang="...">
 <b>ssh lab-user@1.2.3.4</b>
@@ -141,7 +145,7 @@ Password:
 [lab-user@ansibleMaster ~]$
 </pre>
 
-**Step 3.** Install Azure CLI 2.0 in the provisioning machine &#39;ansibleMaster&#39;:
+**Step 8.** Install Azure CLI 2.0 in the provisioning machine &#39;ansibleMaster&#39;:
 
 ```
 sudo yum update -y
