@@ -277,14 +277,14 @@ sudo pip install --upgrade pip
 ```
 
 
-**Step 2.** Install Azure Python SDK. At the time of this writing, the latest supported version is 2.0.0rc5. With this version, the package msrestazure needs to be installed independently. Additionally, we will install the package DNS Python so that we can do DNS checks in Ansible playbooks (to make sure that DNS names are not taken)
+**Step 2.** Install Azure Python SDK for Ansible. Additionally, we will install the package DNS Python so that we can do DNS checks in Ansible playbooks (to make sure that DNS names are not taken). Some Python versions require as well the packaging module to be installed separatedly 
 
 ```
-sudo pip install azure==2.0.0rc5
+sudo pip install ansible[azure]
 ```
 
 ```
-sudo pip install msrestazure dnspython packaging
+sudo pip install dnspython packaging
 ```
 
 
