@@ -429,9 +429,9 @@ ansibleMaster | SUCCESS => {
 
 **Note:** The first time you run the command you will have to acknowledge the host's authenticity, after that it should run automatically
 
-**Step 3.** Step 3.	If you already had VMs in your Azure subscription, they probably didn't pop up in the previous steps in this lab. The reason is because when we created the service principal, the scope was set to the resource group.
+**Step 3.** If you already had VMs in your Azure subscription, they probably didn't pop up in the previous steps in this lab. The reason is because when we created the service principal, the scope was set to the resource group.
 
-Still, you could further refine the inventory script in order to return only the VMs in a certain resource group or a location. To that purpose, we will modify the .ini file that controls some aspects of `azure\_rm.py`. This .ini file is to be located in the same directory as the Python script: `~/ansible/contrib/inventory/azure\_rm.ini`. You need to find the line that specifies which resource groups are to be inspected, uncomment it and change it to something like this:
+If your Service Principal was scoped to the subscription though, you could further refine the inventory script in order to return only the VMs in a certain resource group or a location. To that purpose, we will modify the .ini file that controls some aspects of `azure\_rm.py`. This .ini file is to be located in the same directory as the Python script: `~/ansible/contrib/inventory/azure\_rm.ini`. You need to find the line that specifies which resource groups are to be inspected, uncomment it and change it to something like this:
 
 
 ```
@@ -521,12 +521,11 @@ localhost                  : <b>ok=6</b>    changed=5    unreachable=0    <b>fai
 - `fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "The storage account named storageaccountname is already taken. - Reason.already_exists"}`
 Resolution: use another name for your VM, that one seems to be already taken
 - `fatal: [localhost]: FAILED! => {"changed": false, "failed": true, "msg": "Error creating or updating your-vm-name - Azure Error: InvalidDomainNameLabel\nMessage`: The domain name label for your VM is invalid. It must conform to the following regular expression: ^[a-z][a-z0-9-]{1,61}[a-z0-9]$."}
-Resolution: use another name for your VM following the naming syntax. The problem could be that VM names should not start with a number or an upper case letter, but with a lower case letter 
+Resolution: use another name for your VM following the naming syntax. The problem could be that VM names should not start with a number or an upper case letter, but with a lower case letter. 
 
+**Step 4.** While the playbook is running, have a look in another console inside of the file `~/ansible-azure-lab/new_vm_web.yml` , and try to identify the different parts it is made out of.  
 
-**Step 4.** While the playbook is running, have a look in another console inside of the file `~/ansible-azure-lab/new_vm_web.yml` , and try to identify the different parts it is made out of. 
-
-**Step 5.** Step 5.	You can run the dynamic inventory, to verify that the new VM is now detected by Ansible:
+**Step 5.** You can run the dynamic inventory, to verify that the new VM is now detected by Ansible:
 
 <pre lang="...">
 <b>python ./ansible/contrib/inventory/azure_rm.py --list | jq</b>
@@ -570,6 +569,17 @@ Resolution: use another name for your VM following the naming syntax. The proble
   ]
 }
 </pre>
+
+Alternatively, you can have a look with the Azure CLI:
+
+```
+$ az vm list -g ansiblelab -o table
+$ az vm list -g ansiblelab -o table
+Name           ResourceGroup    Location    Zones
+-------------  ---------------  ----------  -------
+ansibleMaster  ansiblelab       westeurope
+your-vm-name   ansiblelab       westeurope
+```
 
 **Step 6.** Using the dynamic inventory, run the ping test again, to verify that the dynamic inventory file can see the new machine. The first time you run the test you will have to verify the SSH host key, but successive attempts should run without any interaction being required:
 
