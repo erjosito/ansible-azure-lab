@@ -84,16 +84,12 @@ Additionally, Ansible requires that the managed hosts are documented in a **host
 
 **Step 3.** Open a terminal window. In Windows, for example by hitting the Windows key in your keyboard, typing &#39;cmd&#39; (without the quotes) and hitting the Enter key. You might want to maximize the command Window so that it fills your desktop.
 
-**Step 4.** Update the existing Azure CLI to the latest version. Note that this will only work in certain Linux distributions. If you are using the VM provided by Learn On Demand Systems, you can (and you should) issue the following command to update the Azure CLI. For other distros or for Windows please refer to the Azure CLI 2.0 documentation.
-```
-az component update
-```
+**Step 4.** It is recommended to update the existing Azure CLI to the latest version. See the [Azure CLI documentation](https://docs.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) for more info about how to do this.
 
 **Step 5.** Login to Azure in your terminal window.
 
 <pre lang="...">
 <b>az login</b>
-To sign in, use a web browser to open the page https://aka.ms/devicelogin and enter the code XXXXXXXXX to authenticate.
 </pre>
 
 The &#39;az login&#39; command will provide you a code, that you need to introduce (over copy and paste) in the web page http://aka.ms/devicelogin. Open an Internet browser (Firefox is preinstalled int the VM provided by Learn on Demand Systems), go to this URL, and after introducing the code, you will need to authenticate with credentials that are associated to a valid Azure subscription. After a successful login, you can enter the following two commands back in the terminal window in order to create a new resource group, and to set the default resource group accordingly.
@@ -118,7 +114,7 @@ az network public-ip create --name masterPip
 ```
 
 <pre lang="...">
-<b>az vm create -n ansibleMaster --image OpenLogic:CentOS:7.3:latest --vnet-name ansibleVnet --subnet ansibleSubnet --public-ip-address masterPip --authentication-type password --admin-username lab-user --admin-password Microsoft123!</b>
+<b>az vm create -n ansibleMaster --image OpenLogic:CentOS:7.5:latest --vnet-name ansibleVnet --subnet ansibleSubnet --public-ip-address masterPip --authentication-type password --admin-username lab-user --admin-password your-super-secret-password</b>
 {
   "fqdns": "",
   "id": "/subscriptions/3e78e84b-6750-44b9-9d57-d9bba935237a/resourceGroups/ansiblelab/providers/Microsoft.Compute/virtualMachines/ansibleMaster",
@@ -131,9 +127,11 @@ az network public-ip create --name masterPip
 }
 </pre>
 
-**Note:** while this command is running (might take between 10 and 15 minutes), you might wait until it finishes, or in the meantime you can temporarily jump to Lab 2 (Create Service Principal) in a new terminal window. When you are finished with Lab 2 you can come back to this point to finish Lab 1.
+**Note:** Do not forget to put your own password in the previous command, replacing the example string `your-super-secret-password`. VM passwords in Azure must have at least 12 characters, upper and lower case, at least one special character"
 
-**Step 7.** The previous command might take 10-15 minutes to run. After you get again the command prompt, connect over SSH to the new VM, using the public IP address displayed in the output of the previous command, and username and password provided in the previous command (lab-user / Microsoft123!). Please **replace 1.2.3.4** with the actual public IP address retrieved out of the last command in Step 2
+**Note:** This command will take around 3 minutes
+
+**Step 7.** The previous command might take 10-15 minutes to run. After you get again the command prompt, connect over SSH to the new VM, using the public IP address displayed in the output of the previous command, and username and password provided in the previous command (lab-user / your password). Please `replace 1.2.3.4` with the actual public IP address retrieved out of the last command in Step 2
 
 <pre lang="...">
 <b>ssh lab-user@1.2.3.4</b>
@@ -145,21 +143,7 @@ Password:
 [lab-user@ansibleMaster ~]$
 </pre>
 
-**Step 8.** Install Azure CLI 2.0 in the provisioning machine &#39;ansibleMaster&#39;:
-
-```
-sudo yum update -y
-```
-
-```
-sudo yum install -y gcc libffi-devel python-devel openssl-devel
-```
-
-```
-curl -L https://aka.ms/InstallAzureCli | bash
-```
-
-**Note:** you can just press Enter to accept the default answer when the installation program asks you a question. In the last question, make sure to tell the script to update the PATH variable (answer 'Y').
+**Step 8.** Install Azure CLI 2.0 in the provisioning machine `ansibleMaster` following the instructions [here](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest)
 
 
 ## What we have learnt
@@ -177,73 +161,19 @@ As best practice, you should give the minimum permissions required to your servi
 See for more information: [https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli))
 
 
-**Step 1.** Create Active Directory application for Ansible:
+**Step 1.** Create Active Directory application for Ansible. The command `az ad sp create-for-rbac` will assign the scope per default to your default resource group (that we configured earlier in this lab to the resource group `ansiblelab`)
 
 <pre lang="...">
-<b>az ad app create --password ThisIsTheAppPassword --display-name ansibleApp --homepage ansible.mydomain.com --identifier-uris ansible.mydomain.com</b>
+<b>$ az ad sp create-for-rbac -n ansibleapp
+Changing "ansible1138" to a valid URI of "http://ansibleapp", which is the required format used for service principal names
+Retrying role assignment creation: 1/36
+Retrying role assignment creation: 2/36
 {
   "appId": "11111111-1111-1111-1111-111111111111",
-  "appPermissions": null,
-  "availableToOtherTenants": false,
-  "displayName": "ansibleApp",
-  "homepage": "ansible.mydomain.com",
-  "identifierUris": [
-    "ansible.mydomain.com"
-  ],
-  "objectId": "55555555-5555-5555-5555-555555555555",
-  "objectType": "Application",
-  "replyUrls": []
-}
-</pre>
-
-**Step 2.** Create Service Principal associated to that application:
-
-<pre lang="...">
-<b>az ad sp create --id 11111111-1111-1111-1111-111111111111</b>
-{
-  "appId": "11111111-1111-1111-1111-111111111111",
-  "displayName": "ansibleApp",
-  "objectId": "44444444-4444-4444-4444-444444444444",
-  "objectType": "ServicePrincipal",
-  "servicePrincipalNames": [
-    "11111111-1111-1111-1111-111111111111",
-    "ansible.mydomain.com"
-  ]
-}
-</pre>
-
-**Step 3.** Find out your subscription and tenant IDs:
-
-<pre lang="...">
-<b>az account show</b>
-{
-  "environmentName": "AzureCloud",
-  "id": "22222222-2222-2222-2222-222222222222",
-  "isDefault": true,
-  "name": "Your Subscription Name",
-  "state": "Enabled",
-  "tenantId": "33333333-3333-3333-3333-333333333333",
-  "user": {
-    "name": "your.name@microsoft.com",
-    "type": "user"
-  }
-}
-</pre>
-
-**Step 4.**	Assign the Contributor role to the principal for our resource group (remember we have specified the default resource group in Lab 1, so we do not need to specify it again), using the object ID for the service principal:
-
-<pre lang="...">
-<b>az role assignment create --assignee 44444444-4444-4444-4444-444444444444 --role contributor</b>
-{
-  "id": "/subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/ansiblelab/providers/Microsoft.Authorization/roleAssignments/66666666-6666-6666-6666-666666666666",
-  "name": "66666666-6666-6666-6666-666666666666",
-  "properties": {
-    "principalId": "44444444-4444-4444-4444-444444444444",
-    "roleDefinitionId": "/subscriptions/22222222-2222-2222-2222-222222222222/providers/Microsoft.Authorization/roleDefinitions/77777777-7777-7777-7777-777777777777",
-    "scope": "/subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/ansiblelab"
-  },
-  "resourceGroup": "ansiblelab",
-  "type": "Microsoft.Authorization/roleAssignments"
+  "displayName": "ansibleapp",
+  "name": "http://ansibleapp",
+  "password": "ThisIsTheAppPassword",
+  "tenant": "33333333-3333-3333-3333-333333333333"
 }
 </pre>
 
@@ -253,6 +183,41 @@ Note the following values of your output, since we will use them later. In this 
 2. Tenant ID: **33333333-3333-3333-3333-333333333333**
 3. Application ID (also known as Client ID): **11111111-1111-1111-1111-111111111111**
 4. Password: **ThisIsTheAppPassword**
+
+**Step 2. (Optional)** Verify the role assignments for the new service principal
+
+```
+$ az role assignment list --assignee 8c512077-6bcb-4f7a-920c-1d7fd01d1a17
+[
+  {
+    "canDelegate": null,
+    "id": "/subscriptions/22222222-2222-2222-2222-222222222222/providers/Microsoft.Authorization/roleAssignments/6cd62cb5-d65a-4438-ab56-fca58e480e8a",
+    "name": "6cd62cb5-d65a-4438-ab56-fca58e480e8a",
+    "principalId": "d336efd5-d5d3-48ad-b971-cb3bd0b561ab",
+    "principalName": "http://ansibleapp",
+    "roleDefinitionId": "/subscriptions/22222222-2222-2222-2222-222222222222/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c",
+    "roleDefinitionName": "Contributor",
+    "scope": "/subscriptions/22222222-2222-2222-2222-222222222222/resourceGroups/ansiblelab",
+    "type": "Microsoft.Authorization/roleAssignments"
+  }
+]
+```
+
+**Step 3. (Optional)** If you are going to use Ansible frequently, you might want to store your Service Principal credentials in an Azure Keyvault. Assuming you have an Azure Keyvault already created (if not, look [here](https://docs.microsoft.com/en-us/azure/key-vault/quick-create-cli)):
+
+```
+keyvault_name=mykeyault
+az keyvault secret set -n ansibleAppId --value 11111111-1111-1111-1111-111111111111 --vault-name $keyvault_name
+az keyvault secret set -n ansibleAppSecret --value ThisIsTheAppPassword --vault-name $keyvault_name
+```
+
+Later on, in order to retrieve these secrets you can use these commands:
+
+```
+keyvault_name=mykeyault
+ansibleAppId=$(az keyvault secret show -n ansibleAppId --vault-name $keyvault_name --query value -o tsv 2>/dev/null)
+ansibleAppSecret=$(az keyvault secret show -n ansibleAppSecret --vault-name $keyvault_name --query value -o tsv 2>/dev/null)
+```
 
 ## What we have learnt
 
@@ -266,18 +231,22 @@ As alternative to password authentication for the application, digital certifica
 At this point we have our master VM running in Azure, and we have configured a service principal for automation. This section will install Ansible and the Azure Python SDK on the master VM that was created in the previous steps.
 
 **Step 1.** Install required software packages
+
+```
+sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum install -y ansible python-pip jq
+sudo pip install --upgrade pip
+sudo yum install -y python-devel openssl-devel git gcc
+```
+
+Not required???
+
 ```
 sudo yum install -y python-devel openssl-devel git gcc epel-release
 ```
-```
-sudo yum install -y ansible python-pip jq
-```
-```
-sudo pip install --upgrade pip
-```
 
 
-**Step 2.** Install Azure Python SDK for Ansible. Additionally, we will install the package DNS Python so that we can do DNS checks in Ansible playbooks (to make sure that DNS names are not taken). Some Python versions require as well the packaging module to be installed separatedly 
+**Step 2.** Install Azure Python SDK for Ansible. Additionally, we will install the package DNS Python so that we can do DNS checks in Ansible playbooks (to make sure that DNS names are not taken). Some Python versions require as well the packaging module to be installed separately.
 
 ```
 sudo pip install ansible[azure]
@@ -287,6 +256,12 @@ sudo pip install ansible[azure]
 sudo pip install dnspython packaging
 ```
 
+Should you get a certificate error when installing dnspython, you can configure pip to trust the repositories for that package:
+
+```
+sudo pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org dnspython
+sudo pip install dnspython
+```
 
 **Step 3.** We will clone some Github repositories, such as the ansible source code (which includes the dynamic inventory files such as `azure\_rm.py`), and the repository for this lab.
 
@@ -297,7 +272,7 @@ git clone git://github.com/ansible/ansible.git --recursive
 git clone git://github.com/erjosito/ansible-azure-lab
 ```
 
-**Step 4.** Lastly, you need to create a new file in the directory `~/.azure` (create it if it does not exist), using the credentials generated in the previous sections. The filename is `~/.azure/credentials`.
+**Step 4.** Lastly, we need to configure authentication for Ansible, so that it can talk to the Azure API. You can see more about how to authenticate to Azure [here](https://docs.ansible.com/ansible/latest/scenario_guides/guide_azure.html). In this example we will store the credentials in a file, but for a production environment (or when invoking Ansible in CI/CD pipelines) environment variables are probably preferred. We will create a new file in the directory `~/.azure` (create it if it does not exist), using the credentials generated in the previous sections. The filename is `~/.azure/credentials`.
 
 ```
 mkdir ~/.azure
@@ -377,7 +352,7 @@ Ansible can be installed on an Azure VM exactly the same as in other Linux syste
 
 Ansible allows to execute operations in machines that can be defined in a static inventory in the machine where Ansible runs. But what if you would like to run Ansible in all the machines in a resource group, but you don&#39;t know whether it is one or one hundred? This is where dynamic inventories come into place, they discover the machines that fulfill certain requirements (such as existing in Azure, or belonging to a certain resource group), and makes Ansible execute operations on them.
 
-**Step 1.** In this first step we will test that the dynamic inventory script is running, executing it with the parameter &#39;--list&#39;. This should show JSON text containing information about all the VMs in your subscription.
+**Step 1.** In this first step we will test that the dynamic inventory script is running, executing it with the parameter `--list`. This should show JSON text containing information about all the VMs in your subscription.
 
 <pre lang="...">
 <b>python ./ansible/contrib/inventory/azure_rm.py --list | jq</b>
@@ -423,8 +398,14 @@ Ansible allows to execute operations in machines that can be defined in a static
 }
 </pre>
 
-**Note:** &#39;jq&#39; is a command-line JSON interpreter, that you can use here to make the JSON output readable. Try to use the previous command without the ` | jq` part and see the effect.
+**Note:** `jq` is a command-line JSON interpreter, that you can use here to make the JSON output readable. Try to use the previous command without the ` | jq` part and see the effect.
 
+**Note:**: should you get SSL errors, try to uninstall/install the python crytography libraries, and then rerun the command above:
+
+```
+sudo pip uninstall pyOpenSSL cryptography
+sudo pip install pyOpenSSL cryptography
+```
 
 
 **Step 2.** Now we can test Ansible functionality. But we will not change anything on the target machines, just test reachability with the Ansible function `ping`.
